@@ -1,0 +1,1205 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  LayoutDashboard, 
+  FolderPlus, 
+  Search, 
+  MessageSquare, 
+  Clock, 
+  CheckCircle2, 
+  FileText, 
+  Upload, 
+  Users, 
+  Bell, 
+  ChevronRight, 
+  Package, 
+  Calendar as CalendarIcon, 
+  AlertCircle,
+  Stethoscope,
+  Microscope,
+  Menu,
+  X,
+  Send,
+  Paperclip,
+  Image as ImageIcon,
+  MoreVertical,
+  Sparkles,
+  Loader2,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
+  CreditCard,
+  DollarSign,
+  Download,
+  Trash2,
+  Check
+} from 'lucide-react';
+
+// --- MOCK DATA (Datos de ejemplo) ---
+
+const INITIAL_CASES = [
+  {
+    id: "CAS-2024-001",
+    patientInitials: "F.H.B.", // Actualizado para Firdaois el Hadia Boumlik
+    patientId: "P-8842",
+    doctor: "Dr. Alejandro Belmonte",
+    type: "Corona Zirconio Monolítico",
+    teeth: "16, 17",
+    status: "design",
+    priority: "normal",
+    createdDate: "2024-02-01",
+    dueDate: "2024-02-10",
+    description: "Color A2, oclusión ligera. Paciente bruxista. Se requiere refuerzo en cúspides funcionales.",
+    materials: [
+      { type: "Disco Zirconio", brand: "Katana", batch: "BATCH-9923", ref: "STML-A2" }
+    ],
+    timeline: [
+      { status: "received", date: "2024-02-01 09:30", note: "Recibido escaneo intraoral" },
+      { status: "design", date: "2024-02-02 11:00", note: "Diseño CAD iniciado" }
+    ],
+    messages: [
+      { sender: "Clinica", user: "Dr. Belmonte", text: "Adjunto escaneo. Por favor, cuidado con el punto de contacto mesial.", time: "09:35", role: "clinic" },
+      { sender: "Laboratorio", user: "Téc. Iman Satour", text: "Recibido doctor. Lo tendremos en cuenta en el diseño.", time: "10:15", role: "lab" }
+    ],
+    files: [
+      { name: "scan_upper_jaw.stl", type: "3d", date: "2024-02-01" },
+      { name: "foto_color.jpg", type: "image", date: "2024-02-01" }
+    ]
+  },
+  {
+    id: "CAS-2024-002",
+    patientInitials: "E.G.G.", // Actualizado para Erika González Guirado
+    patientId: "P-9901",
+    doctor: "Dra. Laura García",
+    type: "Prótesis Híbrida Superior",
+    teeth: "Arcada Superior",
+    status: "production",
+    priority: "high",
+    createdDate: "2024-01-28",
+    dueDate: "2024-02-08",
+    description: "Estructura barra fresada sobre 4 implantes.",
+    materials: [],
+    timeline: [
+      { status: "received", date: "2024-01-28 16:00", note: "Impresiones físicas recibidas" },
+      { status: "design", date: "2024-01-29 10:00", note: "Diseño de barra aprobado" },
+      { status: "production", date: "2024-02-02 09:00", note: "Fresado de estructura en curso" }
+    ],
+    messages: [],
+    files: []
+  },
+  {
+    id: "CAS-2024-003",
+    patientInitials: "C.R.L.", // Actualizado para Cristina Romero López
+    patientId: "P-1022",
+    doctor: "Dr. Alejandro Belmonte",
+    type: "Férula de descarga",
+    teeth: "Superior",
+    status: "sent",
+    priority: "normal",
+    createdDate: "2024-01-25",
+    dueDate: "2024-01-30",
+    finishDate: "2024-01-30",
+    description: "Michigan rígida, guías caninas marcadas.",
+    materials: [{ type: "Resina Impresión 3D", brand: "KeySplint", batch: "KS-2024-01", ref: "Soft" }],
+    timeline: [
+      { status: "received", date: "2024-01-25", note: "" },
+      { status: "finished", date: "2024-01-29", note: "" },
+      { status: "sent", date: "2024-01-30", note: "Enviado por mensajería MRW" }
+    ],
+    messages: [],
+    files: []
+  }
+];
+
+const INITIAL_PATIENTS = [
+  { id: "P-8842", name: "Firdaois el Hadia Boumlik", age: 20, phone: "600 123 456", email: "firdaois.elhadia@email.com", lastVisit: "2024-02-01", status: "active" },
+  { id: "P-9901", name: "Erika González Guirado", age: 23, phone: "600 987 654", email: "erika.gonzalez@email.com", lastVisit: "2024-01-28", status: "treatment" },
+  { id: "P-1022", name: "Cristina Romero López", age: 20, phone: "600 555 444", email: "cristina.romero@email.com", lastVisit: "2024-01-30", status: "active" },
+  { id: "P-1023", name: "Lucía Méndez Cruz", age: 34, phone: "600 222 333", email: "lucia.mendez@email.com", lastVisit: "2023-12-15", status: "archived" },
+];
+
+const INITIAL_INVOICES = [
+  { id: "INV-2024-001", caseId: "CAS-2024-003", patient: "Cristina Romero López", amount: 120.00, date: "2024-01-30", status: "paid" },
+  { id: "INV-2024-002", caseId: "CAS-2024-001", patient: "Firdaois el Hadia Boumlik", amount: 350.50, date: "2024-02-05", status: "pending" },
+  { id: "INV-2024-003", caseId: "CAS-2024-002", patient: "Erika González Guirado", amount: 2400.00, date: "2024-02-08", status: "overdue" },
+];
+
+const INITIAL_NOTIFICATIONS = [
+    { id: 1, title: "Nuevo Mensaje", text: "Dr. Belmonte ha comentado en el caso de Firdaois H.", time: "09:35", read: false, type: "message" },
+    { id: 2, title: "Cambio de Estado", text: "Caso de Erika G. pasado a Producción", time: "10:00", read: false, type: "status" },
+    { id: 3, title: "Entrega Próxima", text: "El caso de Cristina R. vence mañana", time: "Ayer", read: true, type: "alert" }
+];
+
+const STATUS_CONFIG = {
+  received: { label: "Recibido", color: "bg-gray-100 text-gray-600", step: 1 },
+  design: { label: "En Diseño", color: "bg-blue-100 text-blue-700", step: 2 },
+  production: { label: "Producción", color: "bg-purple-100 text-purple-700", step: 3 },
+  testing: { label: "En Prueba", color: "bg-yellow-100 text-yellow-700", step: 4 },
+  finished: { label: "Terminado", color: "bg-green-100 text-green-700", step: 5 },
+  sent: { label: "Enviado", color: "bg-emerald-600 text-white", step: 6 },
+};
+
+// --- GEMINI API HELPER ---
+const callGeminiAPI = async (prompt) => {
+  const apiKey = ""; // La clave se inyecta en tiempo de ejecución
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
+
+    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+  } catch (error) {
+    console.error("Error llamando a Gemini:", error);
+    return null;
+  }
+};
+
+// --- COMPONENTES AUXILIARES ---
+
+const StatusBadge = ({ status }) => {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.received;
+  return (
+    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border border-transparent ${config.color}`}>
+      {config.label}
+    </span>
+  );
+};
+
+const PriorityBadge = ({ priority }) => {
+  if (priority === 'high') {
+    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200 flex items-center gap-1"><AlertCircle size={10}/> Urgente</span>;
+  }
+  return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">Normal</span>;
+};
+
+// --- APP PRINCIPAL ---
+
+export default function App() {
+  const [cases, setCases] = useState(INITIAL_CASES);
+  const [patients, setPatients] = useState(INITIAL_PATIENTS);
+  const [invoices, setInvoices] = useState(INITIAL_INVOICES);
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  const notificationRef = useRef(null);
+
+  // Simulación de Roles
+  const [currentUser, setCurrentUser] = useState({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
+
+  const stats = {
+    active: cases.filter(c => c.status !== 'sent' && c.status !== 'finished').length,
+    urgent: cases.filter(c => c.priority === 'high' && c.status !== 'sent').length,
+    finished: cases.filter(c => c.status === 'finished').length,
+    delayed: cases.filter(c => new Date(c.dueDate) < new Date() && c.status !== 'sent').length
+  };
+
+  // Click outside listener for notifications
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleRoleSwitch = (role) => {
+    if (role === 'clinic') {
+      setCurrentUser({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
+    } else {
+      setCurrentUser({ role: 'lab', name: 'Téc. Iman Satour', org: 'Laboratorio Pro-Tech' });
+    }
+  };
+
+  const addNotification = (title, text, type = "info") => {
+      const newNotif = {
+          id: Date.now(),
+          title,
+          text,
+          time: "Ahora",
+          read: false,
+          type
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const updateStatus = (caseId, newStatus) => {
+    setCases(prev => prev.map(c => {
+      if (c.id === caseId) {
+        // Añadir notificación automática
+        addNotification(
+            "Cambio de Estado", 
+            `Caso ${c.patientInitials} actualizado a: ${STATUS_CONFIG[newStatus].label}`,
+            "status"
+        );
+
+        const newTimelineEvent = {
+          status: newStatus,
+          date: new Date().toLocaleString(),
+          note: `Estado actualizado a ${STATUS_CONFIG[newStatus].label} por ${currentUser.name}`
+        };
+        return { ...c, status: newStatus, timeline: [...c.timeline, newTimelineEvent] };
+      }
+      return c;
+    }));
+  };
+
+  const addMessage = (caseId, text) => {
+    setCases(prev => prev.map(c => {
+      if (c.id === caseId) {
+        // Si el mensaje no es del usuario actual, generaría notificación en un sistema real
+        // Aquí simulamos notificación solo para ver el efecto
+        if (currentUser.role === 'lab') {
+             // Solo ejemplo: si el lab escribe, notifica al doc
+             // En este código local, se añade al momento
+        }
+        
+        return {
+          ...c,
+          messages: [...c.messages, {
+            sender: currentUser.role === 'lab' ? 'Laboratorio' : 'Clínica',
+            user: currentUser.name,
+            text,
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            role: currentUser.role
+          }]
+        };
+      }
+      return c;
+    }));
+    // Simular notificación de mensaje
+    addNotification("Nuevo Mensaje", `Nuevo comentario en caso ${caseId}`, "message");
+  };
+
+  const handleCreateCase = (newCaseData) => {
+    setCases([newCaseData, ...cases]);
+    setActiveTab('cases');
+    addNotification("Nuevo Caso", `Se ha creado la orden para ${newCaseData.patientInitials}`, "alert");
+  };
+
+  const markAsRead = (id) => {
+      setNotifications(prev => prev.map(n => n.id === id ? {...n, read: true} : n));
+  };
+
+  const markAllRead = () => {
+      setNotifications(prev => prev.map(n => ({...n, read: true})));
+  };
+
+  const deleteNotification = (id, e) => {
+      e.stopPropagation();
+      setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Render Views
+  const renderContent = () => {
+    if (selectedCase) {
+      return (
+        <CaseDetailView 
+          caseData={selectedCase} 
+          onBack={() => setSelectedCase(null)} 
+          currentUser={currentUser}
+          onUpdateStatus={updateStatus}
+          onAddMessage={addMessage}
+        />
+      );
+    }
+
+    switch (activeTab) {
+      case 'dashboard':
+        return <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
+      case 'cases':
+        return <CasesListView cases={cases} onSelectCase={setSelectedCase} />;
+      case 'new-case':
+        return <NewCaseForm onSave={handleCreateCase} onCancel={() => setActiveTab('dashboard')} user={currentUser} />;
+      case 'calendar':
+        return <CalendarView cases={cases} onSelectCase={setSelectedCase} />;
+      case 'patients':
+        return <PatientsView patients={patients} />;
+      case 'billing':
+        return <BillingView invoices={invoices} />;
+      default:
+        return <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20`}>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+          {sidebarOpen && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><Stethoscope size={18} /></div> Dental Track</div>}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500">
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        <nav className="flex-1 py-6 px-2 space-y-1">
+          <NavItem icon={<LayoutDashboard size={20} />} label="Panel de Control" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null);}} />
+          <NavItem icon={<FolderPlus size={20} />} label="Gestión de Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null);}} />
+          <NavItem icon={<CalendarIcon size={20} />} label="Calendario" active={activeTab === 'calendar'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('calendar'); setSelectedCase(null);}} />
+          <NavItem icon={<Users size={20} />} label="Pacientes" active={activeTab === 'patients'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('patients'); setSelectedCase(null);}} />
+          <NavItem icon={<CreditCard size={20} />} label="Facturación" active={activeTab === 'billing'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('billing'); setSelectedCase(null);}} />
+        </nav>
+
+        <div className="p-4 border-t border-slate-100">
+          {sidebarOpen ? (
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
+                {currentUser.name.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{currentUser.name}</p>
+                <p className="text-xs text-slate-500 truncate">{currentUser.org}</p>
+              </div>
+            </div>
+          ) : (
+             <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-white ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
+                {currentUser.name.charAt(0)}
+              </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Top Header */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
+          <h2 className="text-lg font-semibold text-slate-700">
+            {activeTab === 'dashboard' && 'Panel General'}
+            {activeTab === 'cases' && 'Todos los Casos'}
+            {activeTab === 'new-case' && 'Nuevo Trabajo Protésico'}
+            {activeTab === 'calendar' && 'Calendario de Entregas'}
+            {activeTab === 'patients' && 'Directorio de Pacientes'}
+            {activeTab === 'billing' && 'Facturación y Pagos'}
+            {selectedCase && `Detalle del Caso: ${selectedCase.id}`}
+          </h2>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+              <button 
+                onClick={() => handleRoleSwitch('clinic')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'clinic' ? 'bg-white shadow text-cyan-700' : 'text-slate-500'}`}
+              >
+                Vista Clínica
+              </button>
+              <button 
+                onClick={() => handleRoleSwitch('lab')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'lab' ? 'bg-white shadow text-purple-700' : 'text-slate-500'}`}
+              >
+                Vista Lab
+              </button>
+            </div>
+
+            {/* Notification Bell */}
+            <div className="relative" ref={notificationRef}>
+                <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`p-2 rounded-full transition-colors relative ${showNotifications ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
+                    )}
+                </button>
+
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                    <div className="absolute top-12 right-0 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 className="font-semibold text-sm text-slate-700">Notificaciones</h3>
+                            {unreadCount > 0 && (
+                                <button onClick={markAllRead} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                                    Marcar todas leídas
+                                </button>
+                            )}
+                        </div>
+                        <div className="max-h-[350px] overflow-y-auto">
+                            {notifications.length === 0 ? (
+                                <div className="p-8 text-center">
+                                    <Bell size={24} className="mx-auto text-slate-300 mb-2"/>
+                                    <p className="text-sm text-slate-400">No tienes notificaciones nuevas</p>
+                                </div>
+                            ) : (
+                                notifications.map(n => (
+                                    <div 
+                                        key={n.id} 
+                                        onClick={() => markAsRead(n.id)}
+                                        className={`p-3 border-b border-slate-50 cursor-pointer transition-colors group relative ${!n.read ? 'bg-indigo-50/40 hover:bg-indigo-50' : 'hover:bg-slate-50'}`}
+                                    >
+                                        <div className="flex justify-between items-start mb-1 pr-4">
+                                            <div className="flex items-center gap-2">
+                                                {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 block"></span>}
+                                                <span className={`font-medium text-xs ${!n.read ? 'text-indigo-900' : 'text-slate-700'}`}>{n.title}</span>
+                                            </div>
+                                            <span className="text-[10px] text-slate-400 whitespace-nowrap">{n.time}</span>
+                                        </div>
+                                        <p className={`text-xs ${!n.read ? 'text-slate-700' : 'text-slate-500'} line-clamp-2`}>{n.text}</p>
+                                        
+                                        <button 
+                                            onClick={(e) => deleteNotification(n.id, e)}
+                                            className="absolute top-3 right-2 opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition-all"
+                                        >
+                                            <Trash2 size={12}/>
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="p-2 border-t border-slate-100 bg-slate-50 text-center">
+                            <button className="text-xs text-slate-500 hover:text-indigo-600 font-medium">Ver historial completo</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {currentUser.role === 'clinic' && !selectedCase && activeTab !== 'new-case' && activeTab !== 'calendar' && activeTab !== 'patients' && activeTab !== 'billing' && (
+              <button 
+                onClick={() => setActiveTab('new-case')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all"
+              >
+                <FolderPlus size={16} /> Nuevo Caso
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Scrollable Area */}
+        <div className="flex-1 overflow-auto p-6">
+          {renderContent()}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// --- NUEVOS COMPONENTES (CALENDARIO, PACIENTES, FACTURACIÓN) ---
+
+function CalendarView({ cases, onSelectCase }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Generar grid del mes
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const days = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    // Ajustar para que lunes sea 0 (opcional, aquí domingo es 0)
+    return { days, firstDay };
+  };
+
+  const { days, firstDay } = getDaysInMonth(currentDate);
+  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+  const changeMonth = (delta) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1));
+  };
+
+  const getEventsForDay = (day) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return cases.filter(c => c.dueDate === dateStr);
+  };
+
+  return (
+    <div className="flex flex-col h-full gap-6">
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <h2 className="text-xl font-bold text-slate-800 capitalize">
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </h2>
+        <div className="flex gap-2">
+          <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ChevronLeft size={20}/></button>
+          <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium">Hoy</button>
+          <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ChevronRightIcon size={20}/></button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex-1">
+        <div className="grid grid-cols-7 mb-4">
+          {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(day => (
+            <div key={day} className="text-center text-sm font-semibold text-slate-400 uppercase">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-2 h-full auto-rows-fr">
+          {Array.from({ length: firstDay }).map((_, i) => (
+            <div key={`empty-${i}`} className="bg-slate-50/50 rounded-lg"></div>
+          ))}
+          {Array.from({ length: days }).map((_, i) => {
+            const day = i + 1;
+            const events = getEventsForDay(day);
+            const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+            
+            return (
+              <div key={day} className={`min-h-[100px] border rounded-lg p-2 flex flex-col gap-1 transition-all hover:shadow-md ${isToday ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`}>
+                <div className="flex justify-between items-start">
+                  <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'}`}>{day}</span>
+                  {events.length > 0 && <span className="text-[10px] font-bold text-slate-400">{events.length} entregas</span>}
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-1 mt-1">
+                  {events.map(ev => (
+                    <div 
+                      key={ev.id} 
+                      onClick={() => onSelectCase(ev)}
+                      className={`text-[10px] p-1.5 rounded cursor-pointer truncate border-l-2 ${ev.priority === 'high' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}
+                      title={`${ev.patientInitials} - ${ev.type}`}
+                    >
+                      {ev.patientInitials}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PatientsView({ patients }) {
+  const [filter, setFilter] = useState('');
+  
+  const filteredPatients = patients.filter(p => 
+    p.name.toLowerCase().includes(filter.toLowerCase()) || 
+    p.id.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Buscar paciente..." 
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
+        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-indigo-700 transition-colors">
+          <Users size={18} /> Nuevo Paciente
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-slate-50">
+            <tr>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Contacto</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Edad</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Última Visita</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredPatients.map((p) => (
+              <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
+                      {p.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900 text-sm">{p.name}</p>
+                      <p className="text-xs text-slate-500">{p.id}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  <p>{p.phone}</p>
+                  <p className="text-xs text-slate-400">{p.email}</p>
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-600">{p.age} años</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{new Date(p.lastVisit).toLocaleDateString()}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.status === 'active' ? 'bg-green-100 text-green-700' : p.status === 'treatment' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                    {p.status === 'active' ? 'Activo' : p.status === 'treatment' ? 'En Tratamiento' : 'Archivado'}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <button className="text-slate-400 hover:text-indigo-600"><MoreVertical size={18}/></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function BillingView({ invoices }) {
+  const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+  const pendingAmount = invoices.filter(i => i.status !== 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Financial Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+            <DollarSign size={24} />
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm font-medium">Ingresos Totales (Mes)</p>
+            <h4 className="text-2xl font-bold text-slate-800">{totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</h4>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+            <Clock size={24} />
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm font-medium">Pendiente de Cobro</p>
+            <h4 className="text-2xl font-bold text-slate-800">{pendingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</h4>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <FileText size={24} />
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm font-medium">Facturas Emitidas</p>
+            <h4 className="text-2xl font-bold text-slate-800">{invoices.length}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-semibold text-slate-800">Facturas Recientes</h3>
+            <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                <Download size={16}/> Exportar CSV
+            </button>
+        </div>
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-slate-50">
+            <tr>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Nº Factura</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Caso Ref.</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Importe</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {invoices.map((inv) => (
+              <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-mono text-slate-600">{inv.id}</td>
+                <td className="px-6 py-4 text-sm font-medium text-slate-800">{inv.patient}</td>
+                <td className="px-6 py-4 text-sm text-indigo-600">{inv.caseId}</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{new Date(inv.date).toLocaleDateString()}</td>
+                <td className="px-6 py-4 text-sm font-bold text-slate-800">{inv.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                    ${inv.status === 'paid' ? 'bg-green-100 text-green-700' : 
+                      inv.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                    {inv.status === 'paid' ? 'Pagado' : inv.status === 'pending' ? 'Pendiente' : 'Vencido'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 flex gap-2">
+                    <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><Download size={16}/></button>
+                    <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><MoreVertical size={16}/></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// --- SUB-VIEWS EXISTENTES ---
+
+function DashboardView({ cases, stats, onSelectCase, user }) {
+  const recentCases = [...cases].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate)).slice(0, 3);
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard title="En Proceso" value={stats.active} icon={<Clock className="text-blue-500" />} color="bg-blue-50" />
+        <StatCard title="Urgentes" value={stats.urgent} icon={<AlertCircle className="text-red-500" />} color="bg-red-50" />
+        <StatCard title="Para Enviar" value={stats.finished} icon={<CheckCircle2 className="text-green-500" />} color="bg-green-50" />
+        <StatCard title="Retrasados" value={stats.delayed} icon={<CalendarIcon className="text-orange-500" />} color="bg-orange-50" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Active Jobs List */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-semibold text-slate-800">Trabajos Recientes</h3>
+            <button className="text-sm text-indigo-600 hover:text-indigo-800">Ver todo</button>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {recentCases.map((c) => (
+              <div key={c.id} onClick={() => onSelectCase(c)} className="px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between group">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <Package size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-slate-900">{c.patientInitials} <span className="text-slate-400 font-normal text-sm">({c.patientId})</span></p>
+                      <StatusBadge status={c.status} />
+                    </div>
+                    <p className="text-sm text-slate-500">{c.type}</p>
+                    <p className="text-xs text-slate-400 mt-1">Dr. {c.doctor}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-xs text-slate-400">Entrega Estimada</p>
+                    <p className={`text-sm font-medium ${new Date(c.dueDate) < new Date() ? 'text-red-600' : 'text-slate-700'}`}>
+                      {new Date(c.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <ChevronRight size={18} className="text-slate-300 group-hover:text-indigo-500" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Notifications / Activity */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 className="font-semibold text-slate-800 mb-4">Actividad Reciente</h3>
+          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+            {cases[0].timeline.slice().reverse().map((event, idx) => (
+               <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-indigo-500 text-slate-500 group-[.is-active]:text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ml-0 z-10">
+                    <CheckCircle2 size={12}/>
+                  </div>
+                  <div className="w-full ml-4">
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                      <div className="flex justify-between items-center mb-1">
+                         <span className="font-bold text-xs text-slate-700">{STATUS_CONFIG[event.status]?.label}</span>
+                         <time className="font-caveat font-medium text-xs text-indigo-500">{event.date.split(' ')[0]}</time>
+                      </div>
+                      <p className="text-xs text-slate-500">{event.note || `Caso ${cases[0].id}`}</p>
+                    </div>
+                  </div>
+               </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CasesListView({ cases, onSelectCase }) {
+  const [filter, setFilter] = useState('');
+  
+  const filteredCases = cases.filter(c => 
+    c.patientInitials.toLowerCase().includes(filter.toLowerCase()) || 
+    c.id.toLowerCase().includes(filter.toLowerCase()) ||
+    c.doctor.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+      <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Buscar por paciente, ID o doctor..." 
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+            <select className="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none">
+                <option>Todos los estados</option>
+                <option>En Producción</option>
+                <option>Terminados</option>
+            </select>
+        </div>
+      </div>
+      
+      <div className="flex-1 overflow-auto">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-slate-50 sticky top-0 z-10">
+            <tr>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID Caso</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Paciente</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trabajo</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrega</th>
+              <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acción</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredCases.map((c) => (
+              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{c.id}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    <div className="flex flex-col">
+                        <span className="font-medium text-slate-800">{c.patientInitials}</span>
+                        <span className="text-xs text-slate-400">{c.patientId}</span>
+                    </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{c.type}</td>
+                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={c.status} /></td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{new Date(c.dueDate).toLocaleDateString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <button 
+                    onClick={() => onSelectCase(c)}
+                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
+                    Ver detalle
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function CaseDetailView({ caseData, onBack, currentUser, onUpdateStatus, onAddMessage }) {
+  const [msgText, setMsgText] = useState("");
+  const messagesEndRef = useRef(null);
+  const currentStep = STATUS_CONFIG[caseData.status].step;
+  
+  // Gemini AI States
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGeneratingReply, setIsGeneratingReply] = useState(false);
+
+  useEffect(() => {
+    if(messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [caseData.messages]);
+
+  const handleSend = (e) => {
+    e.preventDefault();
+    if (msgText.trim()) {
+      onAddMessage(caseData.id, msgText);
+      setMsgText("");
+    }
+  };
+
+  // --- GEMINI AI FEATURES ---
+  
+  const handleAnalyzeCase = async () => {
+    setIsAnalyzing(true);
+    const prompt = `Actúa como un técnico dental senior experto. Analiza este caso clínico:
+    - Tipo: ${caseData.type}
+    - Dientes: ${caseData.teeth}
+    - Descripción: ${caseData.description}
+    - Prioridad: ${caseData.priority}
+    
+    Proporciona 3 recomendaciones técnicas breves y críticas (bullet points) para asegurar el éxito del trabajo y evitar errores comunes. Sé directo y profesional.`;
+    
+    const result = await callGeminiAPI(prompt);
+    setAiAnalysis(result || "No se pudo generar el análisis en este momento.");
+    setIsAnalyzing(false);
+  };
+
+  const handleGenerateReply = async () => {
+    setIsGeneratingReply(true);
+    const lastMessage = caseData.messages.length > 0 ? caseData.messages[caseData.messages.length - 1].text : "Inicio del caso.";
+    const roleName = currentUser.role === 'clinic' ? 'Odontólogo' : 'Técnico de Laboratorio';
+    
+    const prompt = `Actúa como un ${roleName} profesional. El último mensaje recibido en el chat del caso fue: "${lastMessage}".
+    Genera una respuesta breve, amable y profesional para responder a este mensaje. Solo el texto de la respuesta.`;
+
+    const result = await callGeminiAPI(prompt);
+    if (result) {
+        setMsgText(result);
+    }
+    setIsGeneratingReply(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-2">
+        ← Volver al listado
+      </button>
+
+      {/* Header Info */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold text-slate-800">{caseData.patientInitials}</h1>
+              <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{caseData.patientId}</span>
+              <PriorityBadge priority={caseData.priority} />
+            </div>
+            <p className="text-slate-500 text-sm flex items-center gap-4">
+                <span>{caseData.type}</span>
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span>Piezas: {caseData.teeth}</span>
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden md:block">
+               <p className="text-xs text-slate-400">Estado Actual</p>
+               <StatusBadge status={caseData.status} />
+            </div>
+            
+            {/* Action Buttons based on Role */}
+            {currentUser.role === 'lab' && (
+                <div className="flex items-center gap-2">
+                    {caseData.status === 'received' && <button onClick={() => onUpdateStatus(caseData.id, 'design')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">Iniciar Diseño</button>}
+                    {caseData.status === 'design' && <button onClick={() => onUpdateStatus(caseData.id, 'production')} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">Pasar a Producción</button>}
+                    {caseData.status === 'production' && <button onClick={() => onUpdateStatus(caseData.id, 'finished')} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Marcar Terminado</button>}
+                    {caseData.status === 'finished' && <button onClick={() => onUpdateStatus(caseData.id, 'sent')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm">Marcar Enviado</button>}
+                </div>
+            )}
+          </div>
+        </div>
+
+        {/* Timeline Visualization */}
+        <div className="mt-8 mb-2">
+           <div className="relative flex items-center justify-between w-full">
+               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-0"></div>
+               <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-500 transition-all duration-500 -z-0`} style={{ width: `${((currentStep - 1) / 5) * 100}%` }}></div>
+               
+               {Object.keys(STATUS_CONFIG).map((key, index) => {
+                   const config = STATUS_CONFIG[key];
+                   const isCompleted = config.step <= currentStep;
+                   const isCurrent = config.step === currentStep;
+
+                   return (
+                       <div key={key} className="flex flex-col items-center z-10 bg-white">
+                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-300'}`}>
+                               {isCompleted ? <CheckCircle2 size={16} /> : <div className="w-2 h-2 rounded-full bg-slate-300"></div>}
+                           </div>
+                           <span className={`mt-2 text-xs font-medium ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{config.label}</span>
+                       </div>
+                   )
+               })}
+           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+        
+        {/* Left Column: Details & Traceability */}
+        <div className="lg:col-span-2 space-y-6 overflow-auto pr-2">
+            
+            {/* Planning & Dates */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><CalendarIcon size={18} className="text-indigo-500"/> Planificación</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500">Solicitado</p>
+                        <p className="font-medium text-slate-800">{new Date(caseData.createdDate).toLocaleDateString()}</p>
+                    </div>
+                    <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                        <p className="text-xs text-indigo-500 font-bold">Fecha Entrega Est.</p>
+                        <p className="font-medium text-indigo-700">{new Date(caseData.dueDate).toLocaleDateString()}</p>
+                    </div>
+                     <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500">Cita Paciente</p>
+                        <p className="font-medium text-slate-800">--</p>
+                    </div>
+                </div>
+                <div className="mt-4 p-3 border border-yellow-200 bg-yellow-50 rounded-lg text-sm text-yellow-800 flex items-start gap-2">
+                    <Clock size={16} className="mt-0.5 shrink-0"/>
+                    <p>El tiempo promedio de producción para este tipo de prótesis es de 5 días hábiles.</p>
+                </div>
+            </div>
+
+            {/* Description & Files */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={18} className="text-indigo-500"/> Detalles del Trabajo</h3>
+                    <button 
+                        onClick={handleAnalyzeCase}
+                        disabled={isAnalyzing}
+                        className="text-xs bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                        {isAnalyzing ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12}/>}
+                        {isAnalyzing ? "Analizando..." : "Análisis IA"}
+                    </button>
+                </div>
+                
+                <div className="mb-6">
+                    <h4 className="text-sm font-medium text-slate-700 mb-1">Instrucciones Clínicas</h4>
+                    <p className="text-slate-600 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">{caseData.description}</p>
+                    
+                    {/* AI Analysis Result */}
+                    {aiAnalysis && (
+                        <div className="mt-3 bg-purple-50 border border-purple-100 rounded-lg p-3 animate-fadeIn">
+                             <h5 className="text-xs font-bold text-purple-700 mb-1 flex items-center gap-1"><Sparkles size={10}/> Recomendaciones Técnicas (IA)</h5>
+                             <div className="text-sm text-purple-800 whitespace-pre-line leading-relaxed">
+                                 {aiAnalysis}
+                             </div>
+                        </div>
+                    )}
+                </div>
+                
+                <div>
+                    <h4 className="text-sm font-medium text-slate-700 mb-2">Archivos Adjuntos</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {caseData.files.map((file, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                                <div className="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    {file.type === '3d' ? <Package size={20}/> : <ImageIcon size={20}/>}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-slate-800 truncate">{file.name}</p>
+                                    <p className="text-xs text-slate-500">{file.date}</p>
+                                </div>
+                            </div>
+                        ))}
+                        <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer text-slate-500 hover:text-indigo-600 transition-colors">
+                            <Upload size={18} />
+                            <span className="text-sm font-medium">Subir archivo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             {/* Traceability / Materials */}
+             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Microscope size={18} className="text-indigo-500"/> Trazabilidad y Materiales</h3>
+                {caseData.materials.length > 0 ? (
+                    <div className="overflow-hidden rounded-lg border border-slate-200">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Material</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Marca/Ref</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Lote</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-slate-200">
+                                {caseData.materials.map((mat, i) => (
+                                    <tr key={i}>
+                                        <td className="px-4 py-2 text-sm text-slate-800">{mat.type}</td>
+                                        <td className="px-4 py-2 text-sm text-slate-600">{mat.brand} ({mat.ref})</td>
+                                        <td className="px-4 py-2 text-sm font-mono text-slate-600">{mat.batch}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-6 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                        <p className="text-sm text-slate-500">Aún no se han registrado materiales para este caso.</p>
+                        {currentUser.role === 'lab' && <button className="mt-2 text-xs text-indigo-600 font-medium hover:underline">+ Agregar Material</button>}
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* Right Column: Communication */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <MessageSquare size={18} className="text-indigo-500"/> 
+                    Comentarios
+                </h3>
+                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{caseData.messages.length}</span>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+                {caseData.messages.length === 0 ? (
+                    <div className="text-center text-slate-400 mt-10">
+                        <MessageSquare size={32} className="mx-auto mb-2 opacity-50"/>
+                        <p className="text-sm">No hay mensajes. Inicia la conversación.</p>
+                    </div>
+                ) : (
+                    caseData.messages.map((msg, i) => {
+                        const isMe = msg.role === currentUser.role;
+                        return (
+                            <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                <div className={`max-w-[85%] rounded-lg p-3 text-sm shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'}`}>
+                                    <p>{msg.text}</p>
+                                </div>
+                                <span className="text-[10px] text-slate-400 mt-1 px-1">
+                                    {msg.user} • {msg.time}
+                                </span>
+                            </div>
+                        )
+                    })
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+
+            <div className="p-3 bg-white border-t border-slate-200 relative">
+                {/* AI Reply Button */}
+                <div className="absolute top-[-30px] left-3">
+                     <button 
+                        onClick={handleGenerateReply}
+                        disabled={isGeneratingReply}
+                        className="flex items-center gap-1.5 px-3 py-1 bg-white border border-indigo-200 shadow-sm rounded-full text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                     >
+                        {isGeneratingReply ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10} />}
+                        {isGeneratingReply ? "Generando..." : "Sugerir Respuesta"}
+                     </button>
+                </div>
+
+                <form onSubmit={handleSend} className="flex gap-2">
+                    <button type="button" className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                        <Paperclip size={20}/>
+                    </button>
+                    <input 
+                        type="text" 
+                        value={msgText}
+                        onChange={(e) => setMsgText(e.target.value)}
+                        placeholder="Escribe un mensaje..." 
+                        className="flex-1 bg-slate-100 border-0 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    />
+                    <button type="submit" disabled={!msgText.trim()} className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <Send size={18}/>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+const NavItem = ({ icon, label, active, collapsed, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors mb-1
+      ${active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
+      ${collapsed ? 'justify-center' : ''}
+    `}
+    title={collapsed ? label : ''}
+  >
+    {icon}
+    {!collapsed && <span className="text-sm font-medium">{label}</span>}
+  </button>
+);
+
+const StatCard = ({ title, value, icon, color }) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${color}`}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-slate-500 text-sm font-medium">{title}</p>
+      <h4 className="text-2xl font-bold text-slate-800">{value}</h4>
+    </div>
+  </div>
+);
