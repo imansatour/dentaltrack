@@ -22,7 +22,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 
-    <!-- Import Map: Carga React y Lucide directamente desde la nube -->
+    <!-- Import Map -->
     <script type="importmap">
     {
       "imports": {
@@ -158,7 +158,7 @@
 
         // --- GEMINI API HELPER ---
         const callGeminiAPI = async (prompt) => {
-            const apiKey = ""; // Inserta tu API Key aquí para IA
+            const apiKey = ""; 
             if (!apiKey) {
                 console.warn("Falta la API Key de Gemini.");
                 return null;
@@ -185,7 +185,7 @@
 
         const StatusBadge = ({ status }) => {
             const config = STATUS_CONFIG[status] || STATUS_CONFIG.received;
-            return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border border-transparent ${config.color}`}>{config.label}</span>;
+            return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border border-transparent ${config.color} whitespace-nowrap`}>{config.label}</span>;
         };
 
         const PriorityBadge = ({ priority }) => {
@@ -204,16 +204,16 @@
                 `}
                 title={collapsed ? label : ''}
             >
-                <Icon size={20} />
+                <Icon size={20} className="shrink-0" />
                 {!collapsed && <span className="text-sm font-medium">{label}</span>}
             </button>
         );
 
         const StatCard = ({ title, value, icon, color }) => (
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${color}`}>{icon}</div>
-                <div>
-                    <p className="text-slate-500 text-sm font-medium">{title}</p>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${color}`}>{icon}</div>
+                <div className="min-w-0">
+                    <p className="text-slate-500 text-sm font-medium truncate">{title}</p>
                     <h4 className="text-2xl font-bold text-slate-800">{value}</h4>
                 </div>
             </div>
@@ -225,8 +225,9 @@
             const recentCases = [...cases].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate)).slice(0, 3);
 
             return (
-                <div className="space-y-6 fade-in pb-10">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="space-y-6 fade-in pb-20">
+                    {/* Responsive Grid: 1 col on mobile, 2 on tablet, 4 on desktop */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title="En Proceso" value={stats.active} icon={<Clock className="text-blue-500" />} color="bg-blue-50" />
                         <StatCard title="Urgentes" value={stats.urgent} icon={<AlertCircle className="text-red-500" />} color="bg-red-50" />
                         <StatCard title="Para Enviar" value={stats.finished} icon={<CheckCircle2 className="text-green-500" />} color="bg-green-50" />
@@ -242,20 +243,20 @@
                             <div className="divide-y divide-slate-100">
                                 {recentCases.map((c) => (
                                     <div key={c.id} onClick={() => onSelectCase(c)} className="px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between group">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                        <div className="flex items-start gap-4 overflow-hidden">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
                                                 <Package size={20} />
                                             </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     <p className="font-medium text-slate-900">{c.patientInitials} <span className="text-slate-400 font-normal text-sm">({c.patientId})</span></p>
                                                     <StatusBadge status={c.status} />
                                                 </div>
-                                                <p className="text-sm text-slate-500">{c.type}</p>
+                                                <p className="text-sm text-slate-500 truncate">{c.type}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-right">
+                                        <div className="flex items-center gap-4 shrink-0">
+                                            <div className="text-right hidden sm:block">
                                                 <p className="text-xs text-slate-400">Entrega Estimada</p>
                                                 <p className={`text-sm font-medium ${new Date(c.dueDate) < new Date() ? 'text-red-600' : 'text-slate-700'}`}>
                                                     {new Date(c.dueDate).toLocaleDateString()}
@@ -301,8 +302,8 @@
                 const year = date.getFullYear();
                 const month = date.getMonth();
                 const days = new Date(year, month + 1, 0).getDate();
-                const firstDay = new Date(year, month, 1).getDay(); // Lunes como primer día puede requerir ajuste
-                return { days, firstDay: firstDay === 0 ? 6 : firstDay - 1 }; // Ajuste para que Lunes sea 0
+                const firstDay = new Date(year, month, 1).getDay(); 
+                return { days, firstDay: firstDay === 0 ? 6 : firstDay - 1 }; 
             };
 
             const { days, firstDay } = getDaysInMonth(currentDate);
@@ -313,7 +314,6 @@
             };
 
             const getEventsForDay = (day) => {
-                // Formato simple YYYY-MM-DD para comparar con datos mock
                 const year = currentDate.getFullYear();
                 const month = String(currentDate.getMonth() + 1).padStart(2, '0');
                 const dayStr = String(day).padStart(2, '0');
@@ -322,9 +322,9 @@
             };
 
             return (
-                <div className="flex flex-col h-full gap-6 fade-in">
+                <div className="flex flex-col h-full gap-6 fade-in pb-10">
                     <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                        <h2 className="text-xl font-bold text-slate-800 capitalize">
+                        <h2 className="text-lg md:text-xl font-bold text-slate-800 capitalize">
                             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                         </h2>
                         <div className="flex gap-2">
@@ -334,15 +334,15 @@
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex-1">
-                        <div className="grid grid-cols-7 mb-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 flex-1 overflow-auto">
+                        <div className="grid grid-cols-7 mb-4 min-w-[300px]">
                             {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(day => (
-                                <div key={day} className="text-center text-sm font-semibold text-slate-400 uppercase">{day}</div>
+                                <div key={day} className="text-center text-xs md:text-sm font-semibold text-slate-400 uppercase">{day}</div>
                             ))}
                         </div>
-                        <div className="grid grid-cols-7 gap-2 auto-rows-fr">
+                        <div className="grid grid-cols-7 gap-1 md:gap-2 auto-rows-fr min-w-[300px]">
                             {Array.from({ length: firstDay }).map((_, i) => (
-                                <div key={`empty-${i}`} className="bg-slate-50/50 rounded-lg min-h-[100px]"></div>
+                                <div key={`empty-${i}`} className="bg-slate-50/50 rounded-lg min-h-[60px] md:min-h-[100px]"></div>
                             ))}
                             {Array.from({ length: days }).map((_, i) => {
                                 const day = i + 1;
@@ -350,17 +350,18 @@
                                 const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
                                 
                                 return (
-                                    <div key={day} className={`min-h-[100px] border rounded-lg p-2 flex flex-col gap-1 transition-all hover:shadow-md ${isToday ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`}>
+                                    <div key={day} className={`min-h-[60px] md:min-h-[100px] border rounded-lg p-1 md:p-2 flex flex-col gap-1 transition-all hover:shadow-md ${isToday ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`}>
                                         <div className="flex justify-between items-start">
-                                            <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'}`}>{day}</span>
-                                            {events.length > 0 && <span className="text-[10px] font-bold text-slate-400">{events.length} entregas</span>}
+                                            <span className={`text-xs md:text-sm font-medium w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'}`}>{day}</span>
+                                            {events.length > 0 && <span className="text-[9px] md:text-[10px] font-bold text-slate-400 hidden sm:block">{events.length} entr.</span>}
+                                            {events.length > 0 && <div className="w-2 h-2 rounded-full bg-indigo-500 sm:hidden"></div>}
                                         </div>
-                                        <div className="flex-1 overflow-y-auto space-y-1 mt-1">
+                                        <div className="flex-1 overflow-y-auto space-y-1 mt-1 hidden sm:block">
                                             {events.map(ev => (
                                                 <div 
                                                     key={ev.id} 
                                                     onClick={() => onSelectCase(ev)}
-                                                    className={`text-[10px] p-1.5 rounded cursor-pointer truncate border-l-2 ${ev.priority === 'high' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}
+                                                    className={`text-[9px] md:text-[10px] p-1 rounded cursor-pointer truncate border-l-2 ${ev.priority === 'high' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}
                                                     title={`${ev.patientInitials} - ${ev.type}`}
                                                 >
                                                     {ev.patientInitials}
@@ -385,7 +386,7 @@
             );
 
             return (
-                <div className="space-y-6 fade-in">
+                <div className="space-y-6 fade-in pb-10">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                         <div className="relative w-full sm:w-96">
                             <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
@@ -397,55 +398,57 @@
                                 onChange={(e) => setFilter(e.target.value)}
                             />
                         </div>
-                        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-indigo-700 transition-colors">
+                        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-indigo-700 transition-colors w-full sm:w-auto justify-center">
                             <Users size={18} /> Nuevo Paciente
                         </button>
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Contacto</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Edad</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Última Visita</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredPatients.map((p) => (
-                                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
-                                                    {p.name.split(' ').map(n => n[0]).join('').slice(0,2)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-slate-900 text-sm">{p.name}</p>
-                                                    <p className="text-xs text-slate-500">{p.id}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">
-                                            <p>{p.phone}</p>
-                                            <p className="text-xs text-slate-400">{p.email}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">{p.age} años</td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">{new Date(p.lastVisit).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.status === 'active' ? 'bg-green-100 text-green-700' : p.status === 'treatment' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
-                                                {p.status === 'active' ? 'Activo' : p.status === 'treatment' ? 'En Tratamiento' : 'Archivado'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="text-slate-400 hover:text-indigo-600"><MoreVertical size={18}/></button>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[600px]">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Contacto</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Edad</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Última Visita</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredPatients.map((p) => (
+                                        <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
+                                                        {p.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-slate-900 text-sm">{p.name}</p>
+                                                        <p className="text-xs text-slate-500">{p.id}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">
+                                                <p>{p.phone}</p>
+                                                <p className="text-xs text-slate-400">{p.email}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">{p.age} años</td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">{new Date(p.lastVisit).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.status === 'active' ? 'bg-green-100 text-green-700' : p.status === 'treatment' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {p.status === 'active' ? 'Activo' : p.status === 'treatment' ? 'En Tratamiento' : 'Archivado'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="text-slate-400 hover:text-indigo-600"><MoreVertical size={18}/></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             );
@@ -456,55 +459,57 @@
             const pendingAmount = invoices.filter(i => i.status !== 'paid').reduce((acc, curr) => acc + curr.amount, 0);
 
             return (
-                <div className="space-y-6 fade-in">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-6 fade-in pb-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         <StatCard title="Ingresos Totales (Mes)" value={totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} icon={<DollarSign className="text-green-600" />} color="bg-green-100" />
                         <StatCard title="Pendiente de Cobro" value={pendingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} icon={<Clock className="text-orange-600" />} color="bg-orange-100" />
                         <StatCard title="Facturas Emitidas" value={invoices.length} icon={<FileText className="text-blue-600" />} color="bg-blue-100" />
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                             <h3 className="font-semibold text-slate-800">Facturas Recientes</h3>
                             <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
                                 <Download size={16}/> Exportar CSV
                             </button>
                         </div>
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Nº Factura</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Caso Ref.</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Importe</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {invoices.map((inv) => (
-                                    <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-mono text-slate-600">{inv.id}</td>
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-800">{inv.patient}</td>
-                                        <td className="px-6 py-4 text-sm text-indigo-600">{inv.caseId}</td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">{new Date(inv.date).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-slate-800">{inv.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium 
-                                                ${inv.status === 'paid' ? 'bg-green-100 text-green-700' : 
-                                                inv.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                                                {inv.status === 'paid' ? 'Pagado' : inv.status === 'pending' ? 'Pendiente' : 'Vencido'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 flex gap-2">
-                                            <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><Download size={16}/></button>
-                                            <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><MoreVertical size={16}/></button>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[700px]">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Nº Factura</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Caso Ref.</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Importe</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                        <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {invoices.map((inv) => (
+                                        <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4 text-sm font-mono text-slate-600">{inv.id}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-800">{inv.patient}</td>
+                                            <td className="px-6 py-4 text-sm text-indigo-600">{inv.caseId}</td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">{new Date(inv.date).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4 text-sm font-bold text-slate-800">{inv.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                                                    ${inv.status === 'paid' ? 'bg-green-100 text-green-700' : 
+                                                    inv.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {inv.status === 'paid' ? 'Pagado' : inv.status === 'pending' ? 'Pendiente' : 'Vencido'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 flex gap-2">
+                                                <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><Download size={16}/></button>
+                                                <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><MoreVertical size={16}/></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             );
@@ -532,8 +537,8 @@
                                 onChange={(e) => setFilter(e.target.value)}
                             />
                         </div>
-                        <div className="flex gap-2">
-                            <select className="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none">
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <select className="w-full sm:w-auto px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none">
                                 <option>Todos los estados</option>
                                 <option>En Producción</option>
                                 <option>Terminados</option>
@@ -542,7 +547,7 @@
                     </div>
                     
                     <div className="flex-1 overflow-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead className="bg-slate-50 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID Caso</th>
@@ -611,7 +616,7 @@
             };
 
             return (
-                <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
+                <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in mb-20">
                     <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
                         <h2 className="text-lg font-semibold text-slate-800">Nueva Orden de Trabajo</h2>
                         <p className="text-sm text-slate-500">Complete los detalles para enviar al laboratorio.</p>
@@ -755,7 +760,7 @@
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <div className="flex items-center gap-3 mb-1">
-                                    <h1 className="text-2xl font-bold text-slate-800">{caseData.patientInitials}</h1>
+                                    <h1 className="text-xl md:text-2xl font-bold text-slate-800">{caseData.patientInitials}</h1>
                                     <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{caseData.patientId}</span>
                                     <PriorityBadge priority={caseData.priority} />
                                 </div>
@@ -766,49 +771,49 @@
                                 </p>
                             </div>
                             
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
                                 <div className="text-right hidden md:block">
                                     <p className="text-xs text-slate-400">Estado Actual</p>
                                     <StatusBadge status={caseData.status} />
                                 </div>
                                 
                                 {currentUser.role === 'lab' && (
-                                    <div className="flex items-center gap-2">
-                                        {caseData.status === 'received' && <button onClick={() => onUpdateStatus(caseData.id, 'design')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">Iniciar Diseño</button>}
-                                        {caseData.status === 'design' && <button onClick={() => onUpdateStatus(caseData.id, 'production')} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">Pasar a Producción</button>}
-                                        {caseData.status === 'production' && <button onClick={() => onUpdateStatus(caseData.id, 'finished')} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Marcar Terminado</button>}
-                                        {caseData.status === 'finished' && <button onClick={() => onUpdateStatus(caseData.id, 'sent')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm">Marcar Enviado</button>}
+                                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                        {caseData.status === 'received' && <button onClick={() => onUpdateStatus(caseData.id, 'design')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm w-full sm:w-auto">Iniciar Diseño</button>}
+                                        {caseData.status === 'design' && <button onClick={() => onUpdateStatus(caseData.id, 'production')} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm w-full sm:w-auto">Pasar a Producción</button>}
+                                        {caseData.status === 'production' && <button onClick={() => onUpdateStatus(caseData.id, 'finished')} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm w-full sm:w-auto">Marcar Terminado</button>}
+                                        {caseData.status === 'finished' && <button onClick={() => onUpdateStatus(caseData.id, 'sent')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm w-full sm:w-auto">Marcar Enviado</button>}
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Timeline */}
-                        <div className="mt-8 mb-2">
-                            <div className="relative flex items-center justify-between w-full">
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-0"></div>
-                                <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-500 transition-all duration-500 -z-0`} style={{ width: `${((currentStep - 1) / 5) * 100}%` }}></div>
-                                
-                                {Object.keys(STATUS_CONFIG).map((key) => {
-                                    const config = STATUS_CONFIG[key];
-                                    const isCompleted = config.step <= currentStep;
-                                    const isCurrent = config.step === currentStep;
+                        <div className="mt-8 mb-2 overflow-x-auto pb-2">
+                            <div className="min-w-[600px] relative flex items-center justify-between w-full">
+                               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-0"></div>
+                               <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-500 transition-all duration-500 -z-0`} style={{ width: `${((currentStep - 1) / 5) * 100}%` }}></div>
+                               
+                               {Object.keys(STATUS_CONFIG).map((key, index) => {
+                                   const config = STATUS_CONFIG[key];
+                                   const isCompleted = config.step <= currentStep;
+                                   const isCurrent = config.step === currentStep;
 
-                                    return (
-                                        <div key={key} className="flex flex-col items-center z-10 bg-white">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-300'}`}>
-                                                {isCompleted ? <CheckCircle2 size={16} /> : <div className="w-2 h-2 rounded-full bg-slate-300"></div>}
-                                            </div>
-                                            <span className={`mt-2 text-xs font-medium ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{config.label}</span>
-                                        </div>
-                                    )
-                                })}
-                            </div>
+                                   return (
+                                       <div key={key} className="flex flex-col items-center z-10 bg-white px-2">
+                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-300'}`}>
+                                               {isCompleted ? <CheckCircle2 size={16} /> : <div className="w-2 h-2 rounded-full bg-slate-300"></div>}
+                                           </div>
+                                           <span className={`mt-2 text-xs font-medium whitespace-nowrap ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{config.label}</span>
+                                       </div>
+                                   )
+                               })}
+                           </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-                        <div className="lg:col-span-2 space-y-6 overflow-auto pr-2">
+                        <div className="lg:col-span-2 space-y-6 overflow-auto pr-2 pb-20">
                             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                                 <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><CalendarIcon size={18} className="text-indigo-500"/> Planificación</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -820,7 +825,7 @@
                                         <p className="text-xs text-indigo-500 font-bold">Fecha Entrega Est.</p>
                                         <p className="font-medium text-indigo-700">{new Date(caseData.dueDate).toLocaleDateString()}</p>
                                     </div>
-                                    <div className="p-3 bg-slate-50 rounded-lg">
+                                     <div className="p-3 bg-slate-50 rounded-lg">
                                         <p className="text-xs text-slate-500">Cita Paciente</p>
                                         <p className="font-medium text-slate-800">--</p>
                                     </div>
@@ -832,7 +837,7 @@
                             </div>
 
                             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                <div className="flex justify-between items-center mb-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                                     <h3 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={18} className="text-indigo-500"/> Detalles del Trabajo</h3>
                                     <button 
                                         onClick={handleAnalyzeCase}
@@ -1107,29 +1112,34 @@
 
             return (
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
-                    <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20`}>
-                        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
-                            {sidebarOpen && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2">
-                                <Stethoscope size={18} /> Dental Track
+                    <aside className={`${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 w-64 md:w-20'} fixed md:relative z-40 h-full bg-white border-r border-slate-200 transition-all duration-300 flex flex-col`}>
+                        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 shrink-0">
+                            {(sidebarOpen || window.innerWidth >= 768) && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                                <Stethoscope size={18} className="shrink-0" /> {sidebarOpen ? 'Dental Track' : ''}
                             </div>}
-                            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500">
+                            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500 hidden md:block">
                                 {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                             </button>
+                            <button onClick={() => setSidebarOpen(false)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500 md:hidden ml-auto">
+                                <X size={20} />
+                            </button>
                         </div>
-                        <nav className="flex-1 py-6 px-2 space-y-1">
-                            <NavItem icon={LayoutDashboard} label="Panel de Control" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null);}} />
-                            <NavItem icon={FolderPlus} label="Gestión de Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null);}} />
-                            <NavItem icon={CalendarIcon} label="Calendario" active={activeTab === 'calendar'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('calendar'); setSelectedCase(null);}} />
-                            <NavItem icon={Users} label="Pacientes" active={activeTab === 'patients'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('patients'); setSelectedCase(null);}} />
-                            <NavItem icon={CreditCard} label="Facturación" active={activeTab === 'billing'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('billing'); setSelectedCase(null);}} />
+
+                        <nav className="flex-1 py-6 px-2 space-y-1 overflow-y-auto">
+                            <NavItem icon={LayoutDashboard} label="Panel de Control" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            <NavItem icon={FolderPlus} label="Gestión de Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            <NavItem icon={CalendarIcon} label="Calendario" active={activeTab === 'calendar'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('calendar'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            <NavItem icon={Users} label="Pacientes" active={activeTab === 'patients'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('patients'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            <NavItem icon={CreditCard} label="Facturación" active={activeTab === 'billing'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('billing'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
                         </nav>
-                        <div className="p-4 border-t border-slate-100">
+
+                        <div className="p-4 border-t border-slate-100 shrink-0">
                             {sidebarOpen ? (
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
                                         {currentUser.name.charAt(0)}
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0 overflow-hidden">
                                         <p className="text-sm font-medium truncate">{currentUser.name}</p>
                                         <p className="text-xs text-slate-500 truncate">{currentUser.org}</p>
                                     </div>
@@ -1141,23 +1151,45 @@
                             )}
                         </div>
                     </aside>
-                    <main className="flex-1 flex flex-col overflow-hidden relative">
-                        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
-                            <h2 className="text-lg font-semibold text-slate-700">
-                                {activeTab === 'dashboard' && 'Panel General'}
-                                {activeTab === 'cases' && 'Todos los Casos'}
-                                {activeTab === 'new-case' && 'Nuevo Trabajo Protésico'}
-                                {activeTab === 'calendar' && 'Calendario de Entregas'}
-                                {activeTab === 'patients' && 'Directorio de Pacientes'}
-                                {activeTab === 'billing' && 'Facturación y Pagos'}
-                                {selectedCase && `Detalle del Caso: ${selectedCase.id}`}
-                            </h2>
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-                                    <button onClick={() => handleRoleSwitch('clinic')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'clinic' ? 'bg-white shadow text-cyan-700' : 'text-slate-500'}`}>Vista Clínica</button>
-                                    <button onClick={() => handleRoleSwitch('lab')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'lab' ? 'bg-white shadow text-purple-700' : 'text-slate-500'}`}>Vista Lab</button>
+                    
+                    {/* Overlay for mobile sidebar */}
+                    {sidebarOpen && (
+                        <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>
+                    )}
+
+                    <main className="flex-1 flex flex-col overflow-hidden relative w-full">
+                        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                                    <Menu size={20} />
+                                </button>
+                                <h2 className="text-lg font-semibold text-slate-700 truncate">
+                                    {activeTab === 'dashboard' && 'Panel General'}
+                                    {activeTab === 'cases' && 'Todos los Casos'}
+                                    {activeTab === 'new-case' && 'Nuevo Trabajo Protésico'}
+                                    {activeTab === 'calendar' && 'Calendario de Entregas'}
+                                    {activeTab === 'patients' && 'Directorio de Pacientes'}
+                                    {activeTab === 'billing' && 'Facturación y Pagos'}
+                                    {selectedCase && `Detalle: ${selectedCase.id}`}
+                                </h2>
+                            </div>
+
+                            <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                                <div className="flex items-center gap-1 md:gap-2 bg-slate-100 p-1 rounded-lg">
+                                    <button 
+                                        onClick={() => handleRoleSwitch('clinic')}
+                                        className={`px-2 md:px-3 py-1.5 text-[10px] md:text-xs font-medium rounded-md transition-colors ${currentUser.role === 'clinic' ? 'bg-white shadow text-cyan-700' : 'text-slate-500'}`}
+                                    >
+                                        Clínica
+                                    </button>
+                                    <button 
+                                        onClick={() => handleRoleSwitch('lab')}
+                                        className={`px-2 md:px-3 py-1.5 text-[10px] md:text-xs font-medium rounded-md transition-colors ${currentUser.role === 'lab' ? 'bg-white shadow text-purple-700' : 'text-slate-500'}`}
+                                    >
+                                        Lab
+                                    </button>
                                 </div>
-                                
+
                                 <div className="relative" ref={notificationRef}>
                                     <button 
                                         onClick={() => setShowNotifications(!showNotifications)}
@@ -1170,12 +1202,12 @@
                                     </button>
 
                                     {showNotifications && (
-                                        <div className="absolute top-12 right-0 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="absolute top-12 right-0 w-72 md:w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                                 <h3 className="font-semibold text-sm text-slate-700">Notificaciones</h3>
                                                 {unreadCount > 0 && (
                                                     <button onClick={markAllRead} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
-                                                        Marcar todas leídas
+                                                        Marcar leídas
                                                     </button>
                                                 )}
                                             </div>
@@ -1218,14 +1250,25 @@
                                 {currentUser.role === 'clinic' && !selectedCase && activeTab !== 'new-case' && (
                                     <button 
                                         onClick={() => setActiveTab('new-case')}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all"
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 md:px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all hidden sm:flex"
                                     >
-                                        <FolderPlus size={16} /> Nuevo Caso
+                                        <FolderPlus size={16} /> <span className="hidden md:inline">Nuevo Caso</span>
+                                    </button>
+                                )}
+                                {currentUser.role === 'clinic' && !selectedCase && activeTab !== 'new-case' && (
+                                     <button 
+                                        onClick={() => setActiveTab('new-case')}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg shadow-sm sm:hidden"
+                                    >
+                                        <FolderPlus size={20} />
                                     </button>
                                 )}
                             </div>
                         </header>
-                        <div className="flex-1 overflow-auto p-6">{renderContent()}</div>
+
+                        <div className="flex-1 overflow-auto p-4 md:p-6 w-full">
+                            {renderContent()}
+                        </div>
                     </main>
                 </div>
             );
