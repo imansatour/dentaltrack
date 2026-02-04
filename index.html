@@ -8,102 +8,49 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React y ReactDOM (Versión UMD - Más compatible) -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide Icons (Versión Base) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <!-- Fuente Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Scrollbar suave */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
+
+    <!-- Import Map: Carga React y Lucide directamente desde la nube -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.300.0"
+      }
+    }
+    </script>
+    
+    <!-- Babel para JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen overflow-hidden">
     <div id="root"></div>
 
-    <script type="text/babel">
-        // --- CONFIGURACIÓN SEGURA ---
-        const { useState, useEffect, useRef } = React;
-
-        // Función auxiliar para crear iconos de Lucide de forma segura sin módulos
-        // Esto soluciona el error "Element type is invalid"
-        const Icon = ({ name, size = 20, className, ...props }) => {
-            const lucideIcons = window.lucide ? window.lucide.icons : {};
-            // Convertimos nombres como 'LayoutDashboard' a la key que usa lucide
-            const iconName = name; 
-            const iconNode = lucideIcons[iconName];
-
-            if (!iconNode) {
-                // Fallback invisible si falla la carga
-                return <span style={{width: size, height: size, display: 'inline-block'}} />;
-            }
-
-            return React.createElement(
-                "svg",
-                {
-                    ...props,
-                    width: size,
-                    height: size,
-                    viewBox: "0 0 24 24",
-                    fill: "none",
-                    stroke: "currentColor",
-                    strokeWidth: 2,
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    className: `lucide lucide-${name} ${className || ""}`,
-                    dangerouslySetInnerHTML: { 
-                        __html: iconNode.map(child => {
-                            const [tag, attrs] = child;
-                            // Reconstrucción simple de SVG para compatibilidad máxima
-                            const attrString = Object.entries(attrs)
-                                .map(([key, val]) => `${key}="${val}"`)
-                                .join(' ');
-                            return `<${tag} ${attrString} />`;
-                        }).join('') 
-                    }
-                }
-            );
-        };
-
-        // Componentes wrapper para los iconos usados
-        const LayoutDashboard = (props) => <Icon name="LayoutDashboard" {...props} />;
-        const FolderPlus = (props) => <Icon name="FolderPlus" {...props} />;
-        const Search = (props) => <Icon name="Search" {...props} />;
-        const MessageSquare = (props) => <Icon name="MessageSquare" {...props} />;
-        const Clock = (props) => <Icon name="Clock" {...props} />;
-        const CheckCircle2 = (props) => <Icon name="CheckCircle2" {...props} />;
-        const FileText = (props) => <Icon name="FileText" {...props} />;
-        const Upload = (props) => <Icon name="Upload" {...props} />;
-        const Users = (props) => <Icon name="Users" {...props} />;
-        const Bell = (props) => <Icon name="Bell" {...props} />;
-        const ChevronRight = (props) => <Icon name="ChevronRight" {...props} />;
-        const Package = (props) => <Icon name="Package" {...props} />;
-        const CalendarIcon = (props) => <Icon name="Calendar" {...props} />;
-        const AlertCircle = (props) => <Icon name="AlertCircle" {...props} />;
-        const Stethoscope = (props) => <Icon name="Stethoscope" {...props} />;
-        const Microscope = (props) => <Icon name="Microscope" {...props} />;
-        const Menu = (props) => <Icon name="Menu" {...props} />;
-        const X = (props) => <Icon name="X" {...props} />;
-        const Send = (props) => <Icon name="Send" {...props} />;
-        const Paperclip = (props) => <Icon name="Paperclip" {...props} />;
-        const ImageIcon = (props) => <Icon name="Image" {...props} />;
-        const MoreVertical = (props) => <Icon name="MoreVertical" {...props} />;
-        const Sparkles = (props) => <Icon name="Sparkles" {...props} />;
-        const Loader2 = (props) => <Icon name="Loader2" {...props} />;
-        const ChevronLeft = (props) => <Icon name="ChevronLeft" {...props} />;
-        const CreditCard = (props) => <Icon name="CreditCard" {...props} />;
-        const DollarSign = (props) => <Icon name="DollarSign" {...props} />;
-        const Download = (props) => <Icon name="Download" {...props} />;
-        const Trash2 = (props) => <Icon name="Trash2" {...props} />;
-        const Check = (props) => <Icon name="Check" {...props} />;
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        
+        // Importación completa de iconos
+        import { 
+            LayoutDashboard, FolderPlus, Search, MessageSquare, Clock, CheckCircle2, 
+            FileText, Upload, Users, Bell, ChevronRight, Package, Calendar as CalendarIcon, 
+            AlertCircle, Stethoscope, Microscope, Menu, X, Send, Paperclip, 
+            Image as ImageIcon, MoreVertical, Sparkles, Loader2, ChevronLeft, 
+            ChevronRight as ChevronRightIcon, CreditCard, DollarSign, Download, Trash2, Check 
+        } from 'lucide-react';
 
         // --- DATOS INICIALES ---
 
@@ -120,7 +67,9 @@
                 createdDate: "2024-02-01",
                 dueDate: "2024-02-10",
                 description: "Color A2, oclusión ligera. Paciente bruxista. Se requiere refuerzo en cúspides funcionales.",
-                materials: [{ type: "Disco Zirconio", brand: "Katana", batch: "BATCH-9923", ref: "STML-A2" }],
+                materials: [
+                    { type: "Disco Zirconio", brand: "Katana", batch: "BATCH-9923", ref: "STML-A2" }
+                ],
                 timeline: [
                     { status: "received", date: "2024-02-01 09:30", note: "Recibido escaneo intraoral" },
                     { status: "design", date: "2024-02-02 11:00", note: "Diseño CAD iniciado" }
@@ -209,9 +158,9 @@
 
         // --- GEMINI API HELPER ---
         const callGeminiAPI = async (prompt) => {
-            const apiKey = ""; 
+            const apiKey = ""; // Inserta tu API Key aquí para IA
             if (!apiKey) {
-                console.warn("Falta la API Key de Gemini. Las funciones de IA no responderán.");
+                console.warn("Falta la API Key de Gemini.");
                 return null;
             }
             try {
@@ -270,30 +219,12 @@
             </div>
         );
 
-        // --- APP LOGIC ---
+        // --- VISTAS COMPLETAS ---
 
-        function App() {
-            const [cases, setCases] = useState(INITIAL_CASES);
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [selectedCase, setSelectedCase] = useState(null);
-            const [sidebarOpen, setSidebarOpen] = useState(true);
-            const [currentUser, setCurrentUser] = useState({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
-            
-            // Stats
-            const stats = {
-                active: cases.filter(c => c.status !== 'sent' && c.status !== 'finished').length,
-                urgent: cases.filter(c => c.priority === 'high' && c.status !== 'sent').length,
-                finished: cases.filter(c => c.status === 'finished').length,
-                delayed: cases.filter(c => new Date(c.dueDate) < new Date() && c.status !== 'sent').length
-            };
+        function DashboardView({ cases, stats, onSelectCase }) {
+            const recentCases = [...cases].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate)).slice(0, 3);
 
-            const handleRoleSwitch = (role) => {
-                if (role === 'clinic') setCurrentUser({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
-                else setCurrentUser({ role: 'lab', name: 'Téc. Iman Satour', org: 'Laboratorio Pro-Tech' });
-            };
-
-            // Vistas simplificadas para archivo único
-            const renderDashboard = () => (
+            return (
                 <div className="space-y-6 fade-in pb-10">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <StatCard title="En Proceso" value={stats.active} icon={<Clock className="text-blue-500" />} color="bg-blue-50" />
@@ -301,170 +232,1006 @@
                         <StatCard title="Para Enviar" value={stats.finished} icon={<CheckCircle2 className="text-green-500" />} color="bg-green-50" />
                         <StatCard title="Retrasados" value={stats.delayed} icon={<CalendarIcon className="text-orange-500" />} color="bg-orange-50" />
                     </div>
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="font-semibold text-slate-800 mb-4">Trabajos Recientes</h3>
-                        <div className="divide-y divide-slate-100">
-                            {cases.slice(0,3).map(c => (
-                                <div key={c.id} onClick={() => setSelectedCase(c)} className="py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 p-2 rounded">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><Package size={16}/></div>
-                                        <div>
-                                            <p className="font-medium text-slate-900 text-sm">{c.patientInitials}</p>
-                                            <p className="text-xs text-slate-500">{c.type}</p>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                                <h3 className="font-semibold text-slate-800">Trabajos Recientes</h3>
+                                <button className="text-sm text-indigo-600 hover:text-indigo-800">Ver todo</button>
+                            </div>
+                            <div className="divide-y divide-slate-100">
+                                {recentCases.map((c) => (
+                                    <div key={c.id} onClick={() => onSelectCase(c)} className="px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between group">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                                <Package size={20} />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-medium text-slate-900">{c.patientInitials} <span className="text-slate-400 font-normal text-sm">({c.patientId})</span></p>
+                                                    <StatusBadge status={c.status} />
+                                                </div>
+                                                <p className="text-sm text-slate-500">{c.type}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right">
+                                                <p className="text-xs text-slate-400">Entrega Estimada</p>
+                                                <p className={`text-sm font-medium ${new Date(c.dueDate) < new Date() ? 'text-red-600' : 'text-slate-700'}`}>
+                                                    {new Date(c.dueDate).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <ChevronRightIcon size={18} className="text-slate-300 group-hover:text-indigo-500" />
                                         </div>
                                     </div>
-                                    <StatusBadge status={c.status}/>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                            <h3 className="font-semibold text-slate-800 mb-4">Actividad Reciente</h3>
+                            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                                {cases[0].timeline.slice().reverse().map((event, idx) => (
+                                    <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-indigo-500 text-slate-500 group-[.is-active]:text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ml-0 z-10">
+                                            <CheckCircle2 size={12}/>
+                                        </div>
+                                        <div className="w-full ml-4">
+                                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="font-bold text-xs text-slate-700">{STATUS_CONFIG[event.status]?.label}</span>
+                                                    <time className="font-caveat font-medium text-xs text-indigo-500">{event.date.split(' ')[0]}</time>
+                                                </div>
+                                                <p className="text-xs text-slate-500">{event.note || `Caso ${cases[0].id}`}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             );
+        }
 
-            const renderCaseDetail = () => {
-                if(!selectedCase) return null;
-                return (
-                    <div className="space-y-6 fade-in pb-10">
-                        <button onClick={() => setSelectedCase(null)} className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1"><ChevronLeft size={16}/> Volver</button>
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">{selectedCase.patientInitials} <PriorityBadge priority={selectedCase.priority}/></h1>
-                                    <p className="text-slate-500 text-sm">{selectedCase.type} - {selectedCase.teeth}</p>
-                                </div>
-                                <StatusBadge status={selectedCase.status}/>
-                            </div>
-                            
-                            {/* Acciones Lab */}
-                            {currentUser.role === 'lab' && (
-                                <div className="mt-4 flex gap-2 border-t pt-4">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide py-2">Acciones de Lab:</span>
-                                    {selectedCase.status === 'received' && <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700" onClick={() => {
-                                        setCases(cases.map(c => c.id === selectedCase.id ? {...c, status: 'design'} : c));
-                                        setSelectedCase({...selectedCase, status: 'design'});
-                                    }}>Iniciar Diseño</button>}
-                                    {selectedCase.status === 'design' && <button className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700" onClick={() => {
-                                        setCases(cases.map(c => c.id === selectedCase.id ? {...c, status: 'production'} : c));
-                                        setSelectedCase({...selectedCase, status: 'production'});
-                                    }}>Pasar a Producción</button>}
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><FileText size={16}/> Instrucciones</h4>
-                                    <p className="text-sm text-slate-600">{selectedCase.description}</p>
-                                </div>
-                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageSquare size={16}/> Chat del Caso</h4>
-                                    <div className="space-y-2 max-h-40 overflow-y-auto mb-2">
-                                        {selectedCase.messages.map((m, i) => (
-                                            <div key={i} className={`text-xs p-2 rounded ${m.role === currentUser.role ? 'bg-indigo-100 ml-4' : 'bg-white border mr-4'}`}>
-                                                <span className="font-bold">{m.user}:</span> {m.text}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <input type="text" placeholder="Escribir..." className="flex-1 text-sm border rounded px-2 py-1" id="chatInput" />
-                                        <button className="bg-indigo-600 text-white px-3 rounded" onClick={() => {
-                                            const input = document.getElementById('chatInput');
-                                            if(input.value) {
-                                                const newMsg = { sender: currentUser.role, user: currentUser.name, text: input.value, time: new Date().toLocaleTimeString(), role: currentUser.role };
-                                                const updatedCase = { ...selectedCase, messages: [...selectedCase.messages, newMsg] };
-                                                setCases(cases.map(c => c.id === selectedCase.id ? updatedCase : c));
-                                                setSelectedCase(updatedCase);
-                                                input.value = '';
-                                            }
-                                        }}><Send size={14}/></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
+        function CalendarView({ cases, onSelectCase }) {
+            const [currentDate, setCurrentDate] = useState(new Date());
+            
+            const getDaysInMonth = (date) => {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const days = new Date(year, month + 1, 0).getDate();
+                const firstDay = new Date(year, month, 1).getDay(); // Lunes como primer día puede requerir ajuste
+                return { days, firstDay: firstDay === 0 ? 6 : firstDay - 1 }; // Ajuste para que Lunes sea 0
             };
 
-            const renderCasesList = () => (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-                            <tr><th className="px-6 py-3">ID</th><th className="px-6 py-3">Paciente</th><th className="px-6 py-3">Estado</th><th className="px-6 py-3">Acción</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {cases.map(c => (
-                                <tr key={c.id} className="hover:bg-slate-50">
-                                    <td className="px-6 py-4 text-sm font-medium">{c.id}</td>
-                                    <td className="px-6 py-4 text-sm">{c.patientInitials}</td>
-                                    <td className="px-6 py-4"><StatusBadge status={c.status}/></td>
-                                    <td className="px-6 py-4"><button className="text-indigo-600 text-sm font-medium hover:underline" onClick={() => setSelectedCase(c)}>Ver</button></td>
-                                </tr>
+            const { days, firstDay } = getDaysInMonth(currentDate);
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            const changeMonth = (delta) => {
+                setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1));
+            };
+
+            const getEventsForDay = (day) => {
+                // Formato simple YYYY-MM-DD para comparar con datos mock
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateStr = `${year}-${month}-${dayStr}`;
+                return cases.filter(c => c.dueDate === dateStr);
+            };
+
+            return (
+                <div className="flex flex-col h-full gap-6 fade-in">
+                    <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <h2 className="text-xl font-bold text-slate-800 capitalize">
+                            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                        </h2>
+                        <div className="flex gap-2">
+                            <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ChevronLeft size={20}/></button>
+                            <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium">Hoy</button>
+                            <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"><ChevronRightIcon size={20}/></button>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex-1">
+                        <div className="grid grid-cols-7 mb-4">
+                            {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(day => (
+                                <div key={day} className="text-center text-sm font-semibold text-slate-400 uppercase">{day}</div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                        <div className="grid grid-cols-7 gap-2 auto-rows-fr">
+                            {Array.from({ length: firstDay }).map((_, i) => (
+                                <div key={`empty-${i}`} className="bg-slate-50/50 rounded-lg min-h-[100px]"></div>
+                            ))}
+                            {Array.from({ length: days }).map((_, i) => {
+                                const day = i + 1;
+                                const events = getEventsForDay(day);
+                                const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+                                
+                                return (
+                                    <div key={day} className={`min-h-[100px] border rounded-lg p-2 flex flex-col gap-1 transition-all hover:shadow-md ${isToday ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`}>
+                                        <div className="flex justify-between items-start">
+                                            <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'}`}>{day}</span>
+                                            {events.length > 0 && <span className="text-[10px] font-bold text-slate-400">{events.length} entregas</span>}
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto space-y-1 mt-1">
+                                            {events.map(ev => (
+                                                <div 
+                                                    key={ev.id} 
+                                                    onClick={() => onSelectCase(ev)}
+                                                    className={`text-[10px] p-1.5 rounded cursor-pointer truncate border-l-2 ${ev.priority === 'high' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}
+                                                    title={`${ev.patientInitials} - ${ev.type}`}
+                                                >
+                                                    {ev.patientInitials}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
+            );
+        }
+
+        function PatientsView({ patients }) {
+            const [filter, setFilter] = useState('');
+            
+            const filteredPatients = patients.filter(p => 
+                p.name.toLowerCase().includes(filter.toLowerCase()) || 
+                p.id.toLowerCase().includes(filter.toLowerCase())
             );
 
-            const renderPatients = () => (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
-                    <div className="p-4 border-b border-slate-100 font-semibold">Directorio de Pacientes</div>
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-                            <tr><th className="px-6 py-3">Nombre</th><th className="px-6 py-3">Edad</th><th className="px-6 py-3">Teléfono</th><th className="px-6 py-3">Estado</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {INITIAL_PATIENTS.map(p => (
-                                <tr key={p.id} className="hover:bg-slate-50">
-                                    <td className="px-6 py-4 text-sm font-medium">{p.name}</td>
-                                    <td className="px-6 py-4 text-sm">{p.age}</td>
-                                    <td className="px-6 py-4 text-sm">{p.phone}</td>
-                                    <td className="px-6 py-4 text-sm"><span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">{p.status}</span></td>
+            return (
+                <div className="space-y-6 fade-in">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div className="relative w-full sm:w-96">
+                            <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                            <input 
+                                type="text" 
+                                placeholder="Buscar paciente..." 
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                            />
+                        </div>
+                        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-indigo-700 transition-colors">
+                            <Users size={18} /> Nuevo Paciente
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Contacto</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Edad</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Última Visita</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredPatients.map((p) => (
+                                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
+                                                    {p.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-slate-900 text-sm">{p.name}</p>
+                                                    <p className="text-xs text-slate-500">{p.id}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">
+                                            <p>{p.phone}</p>
+                                            <p className="text-xs text-slate-400">{p.email}</p>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{p.age} años</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{new Date(p.lastVisit).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.status === 'active' ? 'bg-green-100 text-green-700' : p.status === 'treatment' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                {p.status === 'active' ? 'Activo' : p.status === 'treatment' ? 'En Tratamiento' : 'Archivado'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <button className="text-slate-400 hover:text-indigo-600"><MoreVertical size={18}/></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             );
+        }
+
+        function BillingView({ invoices }) {
+            const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+            const pendingAmount = invoices.filter(i => i.status !== 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+
+            return (
+                <div className="space-y-6 fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <StatCard title="Ingresos Totales (Mes)" value={totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} icon={<DollarSign className="text-green-600" />} color="bg-green-100" />
+                        <StatCard title="Pendiente de Cobro" value={pendingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} icon={<Clock className="text-orange-600" />} color="bg-orange-100" />
+                        <StatCard title="Facturas Emitidas" value={invoices.length} icon={<FileText className="text-blue-600" />} color="bg-blue-100" />
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="font-semibold text-slate-800">Facturas Recientes</h3>
+                            <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                                <Download size={16}/> Exportar CSV
+                            </button>
+                        </div>
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Nº Factura</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Caso Ref.</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Importe</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {invoices.map((inv) => (
+                                    <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 text-sm font-mono text-slate-600">{inv.id}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-slate-800">{inv.patient}</td>
+                                        <td className="px-6 py-4 text-sm text-indigo-600">{inv.caseId}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{new Date(inv.date).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 text-sm font-bold text-slate-800">{inv.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                                                ${inv.status === 'paid' ? 'bg-green-100 text-green-700' : 
+                                                inv.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                                {inv.status === 'paid' ? 'Pagado' : inv.status === 'pending' ? 'Pendiente' : 'Vencido'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 flex gap-2">
+                                            <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><Download size={16}/></button>
+                                            <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded"><MoreVertical size={16}/></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function CasesListView({ cases, onSelectCase }) {
+            const [filter, setFilter] = useState('');
+            
+            const filteredCases = cases.filter(c => 
+                c.patientInitials.toLowerCase().includes(filter.toLowerCase()) || 
+                c.id.toLowerCase().includes(filter.toLowerCase()) ||
+                c.doctor.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            return (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full fade-in">
+                    <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                        <div className="relative w-full sm:w-96">
+                            <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                            <input 
+                                type="text" 
+                                placeholder="Buscar por paciente, ID o doctor..." 
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            <select className="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none">
+                                <option>Todos los estados</option>
+                                <option>En Producción</option>
+                                <option>Terminados</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50 sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID Caso</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Paciente</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trabajo</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrega</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredCases.map((c) => (
+                                    <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{c.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-slate-800">{c.patientInitials}</span>
+                                                <span className="text-xs text-slate-400">{c.patientId}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{c.type}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={c.status} /></td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{new Date(c.dueDate).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button 
+                                                onClick={() => onSelectCase(c)}
+                                                className="text-indigo-600 hover:text-indigo-800 font-medium"
+                                            >
+                                                Ver detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function NewCaseForm({ onSave, onCancel, user }) {
+            const [formData, setFormData] = useState({
+                patientInitials: '',
+                patientId: '',
+                type: 'Corona Zirconio',
+                teeth: '',
+                priority: 'normal',
+                dueDate: '',
+                description: ''
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const newCase = {
+                    id: `CAS-2024-${Math.floor(Math.random() * 1000)}`,
+                    ...formData,
+                    doctor: user.name,
+                    status: 'received',
+                    createdDate: new Date().toISOString(),
+                    materials: [],
+                    timeline: [{ status: 'received', date: new Date().toLocaleString(), note: 'Caso creado por clínica' }],
+                    messages: [],
+                    files: []
+                };
+                onSave(newCase);
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden fade-in">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                        <h2 className="text-lg font-semibold text-slate-800">Nueva Orden de Trabajo</h2>
+                        <p className="text-sm text-slate-500">Complete los detalles para enviar al laboratorio.</p>
+                    </div>
+                    
+                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Iniciales Paciente *</label>
+                                <input required type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="A.B.C." 
+                                    value={formData.patientInitials} onChange={e => setFormData({...formData, patientInitials: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">ID Historia Clínica</label>
+                                <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="HC-12345" 
+                                    value={formData.patientId} onChange={e => setFormData({...formData, patientId: e.target.value})}/>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Trabajo *</label>
+                                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                                    value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                                    <option>Corona Zirconio</option>
+                                    <option>Corona Metal-Cerámica</option>
+                                    <option>Carilla E.Max</option>
+                                    <option>Prótesis Híbrida</option>
+                                    <option>Férula de Descarga</option>
+                                    <option>Esquelético</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Piezas Dentales *</label>
+                                <input required type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Ej: 11, 21" 
+                                    value={formData.teeth} onChange={e => setFormData({...formData, teeth: e.target.value})}/>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Fecha Entrega Deseada *</label>
+                                <input required type="date" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
+                                    value={formData.dueDate} onChange={e => setFormData({...formData, dueDate: e.target.value})}/>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Prioridad</label>
+                                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                                    value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
+                                    <option value="normal">Normal</option>
+                                    <option value="high">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Instrucciones y Observaciones</label>
+                            <textarea rows="4" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Color, detalles de oclusión, tipo de implante..."
+                                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
+                        </div>
+
+                        <div className="border border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <Upload size={32} className="mb-2 text-slate-400"/>
+                            <p className="text-sm font-medium">Arrastra archivos aquí o haz clic para subir</p>
+                            <p className="text-xs text-slate-400 mt-1">STL, PLY, OBJ, JPG, PDF (Max 50MB)</p>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                            <button type="button" onClick={onCancel} className="px-4 py-2 text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg text-sm font-medium">Cancelar</button>
+                            <button type="submit" className="px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium shadow-sm">Crear Orden</button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        function CaseDetailView({ caseData, onBack, currentUser, onUpdateStatus, onAddMessage }) {
+            const [msgText, setMsgText] = useState("");
+            const messagesEndRef = useRef(null);
+            const currentStep = STATUS_CONFIG[caseData.status].step;
+            
+            // Gemini AI States
+            const [aiAnalysis, setAiAnalysis] = useState(null);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+            const [isGeneratingReply, setIsGeneratingReply] = useState(false);
+
+            useEffect(() => {
+                if(messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [caseData.messages]);
+
+            const handleSend = (e) => {
+                e.preventDefault();
+                if (msgText.trim()) {
+                    onAddMessage(caseData.id, msgText);
+                    setMsgText("");
+                }
+            };
+
+            const handleAnalyzeCase = async () => {
+                setIsAnalyzing(true);
+                const prompt = `Actúa como un técnico dental senior experto. Analiza este caso clínico:
+                - Tipo: ${caseData.type}
+                - Dientes: ${caseData.teeth}
+                - Descripción: ${caseData.description}
+                - Prioridad: ${caseData.priority}
+                
+                Proporciona 3 recomendaciones técnicas breves y críticas (bullet points) para asegurar el éxito del trabajo y evitar errores comunes. Sé directo y profesional.`;
+                
+                const result = await callGeminiAPI(prompt);
+                setAiAnalysis(result || "No se pudo generar el análisis (Configura la API Key en el código).");
+                setIsAnalyzing(false);
+            };
+
+            const handleGenerateReply = async () => {
+                setIsGeneratingReply(true);
+                const lastMessage = caseData.messages.length > 0 ? caseData.messages[caseData.messages.length - 1].text : "Inicio del caso.";
+                const roleName = currentUser.role === 'clinic' ? 'Odontólogo' : 'Técnico de Laboratorio';
+                
+                const prompt = `Actúa como un ${roleName} profesional. El último mensaje recibido en el chat del caso fue: "${lastMessage}".
+                Genera una respuesta breve, amable y profesional para responder a este mensaje. Solo el texto de la respuesta.`;
+
+                const result = await callGeminiAPI(prompt);
+                if (result) {
+                    setMsgText(result);
+                } else {
+                    setMsgText("Error: Configura la API Key para usar la IA.");
+                }
+                setIsGeneratingReply(false);
+            };
+
+            return (
+                <div className="space-y-6 fade-in pb-10">
+                    <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-2">
+                        <ChevronLeft size={16}/> Volver al listado
+                    </button>
+
+                    {/* Header Info */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                    <h1 className="text-2xl font-bold text-slate-800">{caseData.patientInitials}</h1>
+                                    <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{caseData.patientId}</span>
+                                    <PriorityBadge priority={caseData.priority} />
+                                </div>
+                                <p className="text-slate-500 text-sm flex items-center gap-4">
+                                    <span>{caseData.type}</span>
+                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                    <span>Piezas: {caseData.teeth}</span>
+                                </p>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <div className="text-right hidden md:block">
+                                    <p className="text-xs text-slate-400">Estado Actual</p>
+                                    <StatusBadge status={caseData.status} />
+                                </div>
+                                
+                                {currentUser.role === 'lab' && (
+                                    <div className="flex items-center gap-2">
+                                        {caseData.status === 'received' && <button onClick={() => onUpdateStatus(caseData.id, 'design')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">Iniciar Diseño</button>}
+                                        {caseData.status === 'design' && <button onClick={() => onUpdateStatus(caseData.id, 'production')} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm">Pasar a Producción</button>}
+                                        {caseData.status === 'production' && <button onClick={() => onUpdateStatus(caseData.id, 'finished')} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Marcar Terminado</button>}
+                                        {caseData.status === 'finished' && <button onClick={() => onUpdateStatus(caseData.id, 'sent')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm">Marcar Enviado</button>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Timeline */}
+                        <div className="mt-8 mb-2">
+                            <div className="relative flex items-center justify-between w-full">
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-0"></div>
+                                <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-500 transition-all duration-500 -z-0`} style={{ width: `${((currentStep - 1) / 5) * 100}%` }}></div>
+                                
+                                {Object.keys(STATUS_CONFIG).map((key) => {
+                                    const config = STATUS_CONFIG[key];
+                                    const isCompleted = config.step <= currentStep;
+                                    const isCurrent = config.step === currentStep;
+
+                                    return (
+                                        <div key={key} className="flex flex-col items-center z-10 bg-white">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-300'}`}>
+                                                {isCompleted ? <CheckCircle2 size={16} /> : <div className="w-2 h-2 rounded-full bg-slate-300"></div>}
+                                            </div>
+                                            <span className={`mt-2 text-xs font-medium ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>{config.label}</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+                        <div className="lg:col-span-2 space-y-6 overflow-auto pr-2">
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><CalendarIcon size={18} className="text-indigo-500"/> Planificación</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="p-3 bg-slate-50 rounded-lg">
+                                        <p className="text-xs text-slate-500">Solicitado</p>
+                                        <p className="font-medium text-slate-800">{new Date(caseData.createdDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                                        <p className="text-xs text-indigo-500 font-bold">Fecha Entrega Est.</p>
+                                        <p className="font-medium text-indigo-700">{new Date(caseData.dueDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="p-3 bg-slate-50 rounded-lg">
+                                        <p className="text-xs text-slate-500">Cita Paciente</p>
+                                        <p className="font-medium text-slate-800">--</p>
+                                    </div>
+                                </div>
+                                <div className="mt-4 p-3 border border-yellow-200 bg-yellow-50 rounded-lg text-sm text-yellow-800 flex items-start gap-2">
+                                    <Clock size={16} className="mt-0.5 shrink-0"/>
+                                    <p>El tiempo promedio de producción para este tipo de prótesis es de 5 días hábiles.</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={18} className="text-indigo-500"/> Detalles del Trabajo</h3>
+                                    <button 
+                                        onClick={handleAnalyzeCase}
+                                        disabled={isAnalyzing}
+                                        className="text-xs bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    >
+                                        {isAnalyzing ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12}/>}
+                                        {isAnalyzing ? "Analizando..." : "Análisis IA"}
+                                    </button>
+                                </div>
+                                
+                                <div className="mb-6">
+                                    <h4 className="text-sm font-medium text-slate-700 mb-1">Instrucciones Clínicas</h4>
+                                    <p className="text-slate-600 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">{caseData.description}</p>
+                                    
+                                    {aiAnalysis && (
+                                        <div className="mt-3 bg-purple-50 border border-purple-100 rounded-lg p-3 fade-in">
+                                            <h5 className="text-xs font-bold text-purple-700 mb-1 flex items-center gap-1"><Sparkles size={10}/> Recomendaciones Técnicas (IA)</h5>
+                                            <div className="text-sm text-purple-800 whitespace-pre-line leading-relaxed">
+                                                {aiAnalysis}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div>
+                                    <h4 className="text-sm font-medium text-slate-700 mb-2">Archivos Adjuntos</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {caseData.files.map((file, idx) => (
+                                            <div key={idx} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                                                <div className="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                    {file.type === '3d' ? <Package size={20}/> : <ImageIcon size={20}/>}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium text-slate-800 truncate">{file.name}</p>
+                                                    <p className="text-xs text-slate-500">{file.date}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer text-slate-500 hover:text-indigo-600 transition-colors">
+                                            <Upload size={18} />
+                                            <span className="text-sm font-medium">Subir archivo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Microscope size={18} className="text-indigo-500"/> Trazabilidad y Materiales</h3>
+                                {caseData.materials.length > 0 ? (
+                                    <div className="overflow-hidden rounded-lg border border-slate-200">
+                                        <table className="min-w-full divide-y divide-slate-200">
+                                            <thead className="bg-slate-50">
+                                                <tr>
+                                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Material</th>
+                                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Marca/Ref</th>
+                                                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500">Lote</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-slate-200">
+                                                {caseData.materials.map((mat, i) => (
+                                                    <tr key={i}>
+                                                        <td className="px-4 py-2 text-sm text-slate-800">{mat.type}</td>
+                                                        <td className="px-4 py-2 text-sm text-slate-600">{mat.brand} ({mat.ref})</td>
+                                                        <td className="px-4 py-2 text-sm font-mono text-slate-600">{mat.batch}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-6 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                                        <p className="text-sm text-slate-500">Aún no se han registrado materiales para este caso.</p>
+                                        {currentUser.role === 'lab' && <button className="mt-2 text-xs text-indigo-600 font-medium hover:underline">+ Agregar Material</button>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
+                            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                                    <MessageSquare size={18} className="text-indigo-500"/> 
+                                    Comentarios
+                                </h3>
+                                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{caseData.messages.length}</span>
+                            </div>
+                            
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+                                {caseData.messages.length === 0 ? (
+                                    <div className="text-center text-slate-400 mt-10">
+                                        <MessageSquare size={32} className="mx-auto mb-2 opacity-50"/>
+                                        <p className="text-sm">No hay mensajes. Inicia la conversación.</p>
+                                    </div>
+                                ) : (
+                                    caseData.messages.map((msg, i) => {
+                                        const isMe = msg.role === currentUser.role;
+                                        return (
+                                            <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                                <div className={`max-w-[85%] rounded-lg p-3 text-sm shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'}`}>
+                                                    <p>{msg.text}</p>
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 mt-1 px-1">
+                                                    {msg.user} • {msg.time}
+                                                </span>
+                                            </div>
+                                        )
+                                    })
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            <div className="p-3 bg-white border-t border-slate-200 relative">
+                                <div className="absolute top-[-30px] left-3">
+                                    <button 
+                                        onClick={handleGenerateReply}
+                                        disabled={isGeneratingReply}
+                                        className="flex items-center gap-1.5 px-3 py-1 bg-white border border-indigo-200 shadow-sm rounded-full text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                    >
+                                        {isGeneratingReply ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10} />}
+                                        {isGeneratingReply ? "Generando..." : "Sugerir Respuesta"}
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleSend} className="flex gap-2">
+                                    <button type="button" className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                                        <Paperclip size={20}/>
+                                    </button>
+                                    <input 
+                                        type="text" 
+                                        value={msgText}
+                                        onChange={(e) => setMsgText(e.target.value)}
+                                        placeholder="Escribe un mensaje..." 
+                                        className="flex-1 bg-slate-100 border-0 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                                    />
+                                    <button type="submit" disabled={!msgText.trim()} className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                        <Send size={18}/>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- COMPONENTE PRINCIPAL (APP) ---
+        function App() {
+            const [cases, setCases] = useState(INITIAL_CASES);
+            const [patients, setPatients] = useState(INITIAL_PATIENTS);
+            const [invoices, setInvoices] = useState(INITIAL_INVOICES);
+            const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+            const [showNotifications, setShowNotifications] = useState(false);
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [selectedCase, setSelectedCase] = useState(null);
+            const [sidebarOpen, setSidebarOpen] = useState(true);
+            const [currentUser, setCurrentUser] = useState({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
+            
+            const notificationRef = useRef(null);
+
+            useEffect(() => {
+                function handleClickOutside(event) {
+                    if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                        setShowNotifications(false);
+                    }
+                }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, []);
+
+            const addNotification = (title, text, type = "info") => {
+                const newNotif = {
+                    id: Date.now(),
+                    title,
+                    text,
+                    time: "Ahora",
+                    read: false,
+                    type
+                };
+                setNotifications(prev => [newNotif, ...prev]);
+            };
+
+            const markAsRead = (id) => {
+                setNotifications(prev => prev.map(n => n.id === id ? {...n, read: true} : n));
+            };
+
+            const markAllRead = () => {
+                setNotifications(prev => prev.map(n => ({...n, read: true})));
+            };
+
+            const deleteNotification = (id, e) => {
+                e.stopPropagation();
+                setNotifications(prev => prev.filter(n => n.id !== id));
+            };
+
+            const unreadCount = notifications.filter(n => !n.read).length;
+
+            const handleRoleSwitch = (role) => {
+                if (role === 'clinic') {
+                    setCurrentUser({ role: 'clinic', name: 'Dr. Alejandro Belmonte', org: 'Clínica Dental Sonrisas' });
+                } else {
+                    setCurrentUser({ role: 'lab', name: 'Téc. Iman Satour', org: 'Laboratorio Pro-Tech' });
+                }
+            };
+
+            const updateStatus = (caseId, newStatus) => {
+                setCases(prev => prev.map(c => {
+                    if (c.id === caseId) {
+                        addNotification(
+                            "Cambio de Estado", 
+                            `Caso ${c.patientInitials} actualizado a: ${STATUS_CONFIG[newStatus].label}`,
+                            "status"
+                        );
+                        const newTimelineEvent = {
+                            status: newStatus,
+                            date: new Date().toLocaleString(),
+                            note: `Estado actualizado a ${STATUS_CONFIG[newStatus].label} por ${currentUser.name}`
+                        };
+                        return { ...c, status: newStatus, timeline: [...c.timeline, newTimelineEvent] };
+                    }
+                    return c;
+                }));
+            };
+
+            const addMessage = (caseId, text) => {
+                setCases(prev => prev.map(c => {
+                    if (c.id === caseId) {
+                        return {
+                            ...c,
+                            messages: [...c.messages, {
+                                sender: currentUser.role === 'lab' ? 'Laboratorio' : 'Clínica',
+                                user: currentUser.name,
+                                text,
+                                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                                role: currentUser.role
+                            }]
+                        };
+                    }
+                    return c;
+                }));
+                addNotification("Nuevo Mensaje", `Nuevo comentario en caso ${caseId}`, "message");
+            };
+
+            const handleCreateCase = (newCaseData) => {
+                setCases([newCaseData, ...cases]);
+                setActiveTab('cases');
+                addNotification("Nuevo Caso", `Se ha creado la orden para ${newCaseData.patientInitials}`, "alert");
+            };
+
+            const stats = {
+                active: cases.filter(c => c.status !== 'sent' && c.status !== 'finished').length,
+                urgent: cases.filter(c => c.priority === 'high' && c.status !== 'sent').length,
+                finished: cases.filter(c => c.status === 'finished').length,
+                delayed: cases.filter(c => new Date(c.dueDate) < new Date() && c.status !== 'sent').length
+            };
+            
+            // Renderizado condicional
+            const renderContent = () => {
+                if (selectedCase) {
+                    return <CaseDetailView caseData={selectedCase} onBack={() => setSelectedCase(null)} currentUser={currentUser} onUpdateStatus={updateStatus} onAddMessage={addMessage} />;
+                }
+                switch (activeTab) {
+                    case 'dashboard': return <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
+                    case 'cases': return <CasesListView cases={cases} onSelectCase={setSelectedCase} />;
+                    case 'calendar': return <CalendarView cases={cases} onSelectCase={setSelectedCase} />;
+                    case 'patients': return <PatientsView patients={patients} />;
+                    case 'billing': return <BillingView invoices={invoices} />;
+                    case 'new-case': return <NewCaseForm onSave={handleCreateCase} onCancel={() => setActiveTab('dashboard')} user={currentUser} />;
+                    default: return <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
+                }
+            };
 
             return (
                 <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
                     <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20`}>
                         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
-                            {sidebarOpen && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2"><Stethoscope size={18} /> Dental Track</div>}
-                            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 text-slate-400 hover:bg-slate-100 rounded">{sidebarOpen ? <X size={20} /> : <Menu size={20} />}</button>
+                            {sidebarOpen && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2">
+                                <Stethoscope size={18} /> Dental Track
+                            </div>}
+                            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500">
+                                {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                            </button>
                         </div>
                         <nav className="flex-1 py-6 px-2 space-y-1">
-                            <NavItem icon={LayoutDashboard} label="Panel" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null);}} />
-                            <NavItem icon={FolderPlus} label="Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null);}} />
+                            <NavItem icon={LayoutDashboard} label="Panel de Control" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null);}} />
+                            <NavItem icon={FolderPlus} label="Gestión de Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null);}} />
+                            <NavItem icon={CalendarIcon} label="Calendario" active={activeTab === 'calendar'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('calendar'); setSelectedCase(null);}} />
                             <NavItem icon={Users} label="Pacientes" active={activeTab === 'patients'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('patients'); setSelectedCase(null);}} />
+                            <NavItem icon={CreditCard} label="Facturación" active={activeTab === 'billing'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('billing'); setSelectedCase(null);}} />
                         </nav>
                         <div className="p-4 border-t border-slate-100">
-                            <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-white font-bold ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
-                                {currentUser.name.charAt(0)}
-                            </div>
-                            {sidebarOpen && <p className="text-xs text-center mt-2 text-slate-500">{currentUser.name}</p>}
+                            {sidebarOpen ? (
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
+                                        {currentUser.name.charAt(0)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">{currentUser.name}</p>
+                                        <p className="text-xs text-slate-500 truncate">{currentUser.org}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center text-white ${currentUser.role === 'clinic' ? 'bg-cyan-500' : 'bg-purple-500'}`}>
+                                    {currentUser.name.charAt(0)}
+                                </div>
+                            )}
                         </div>
                     </aside>
                     <main className="flex-1 flex flex-col overflow-hidden relative">
                         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
-                            <h2 className="text-lg font-semibold text-slate-700 capitalize">{activeTab}</h2>
-                            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-                                <button onClick={() => handleRoleSwitch('clinic')} className={`px-3 py-1 text-xs font-medium rounded ${currentUser.role === 'clinic' ? 'bg-white shadow text-cyan-700' : 'text-slate-500'}`}>Clínica</button>
-                                <button onClick={() => handleRoleSwitch('lab')} className={`px-3 py-1 text-xs font-medium rounded ${currentUser.role === 'lab' ? 'bg-white shadow text-purple-700' : 'text-slate-500'}`}>Lab</button>
+                            <h2 className="text-lg font-semibold text-slate-700">
+                                {activeTab === 'dashboard' && 'Panel General'}
+                                {activeTab === 'cases' && 'Todos los Casos'}
+                                {activeTab === 'new-case' && 'Nuevo Trabajo Protésico'}
+                                {activeTab === 'calendar' && 'Calendario de Entregas'}
+                                {activeTab === 'patients' && 'Directorio de Pacientes'}
+                                {activeTab === 'billing' && 'Facturación y Pagos'}
+                                {selectedCase && `Detalle del Caso: ${selectedCase.id}`}
+                            </h2>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                                    <button onClick={() => handleRoleSwitch('clinic')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'clinic' ? 'bg-white shadow text-cyan-700' : 'text-slate-500'}`}>Vista Clínica</button>
+                                    <button onClick={() => handleRoleSwitch('lab')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${currentUser.role === 'lab' ? 'bg-white shadow text-purple-700' : 'text-slate-500'}`}>Vista Lab</button>
+                                </div>
+                                
+                                <div className="relative" ref={notificationRef}>
+                                    <button 
+                                        onClick={() => setShowNotifications(!showNotifications)}
+                                        className={`p-2 rounded-full transition-colors relative ${showNotifications ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                        <Bell size={20} />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
+                                        )}
+                                    </button>
+
+                                    {showNotifications && (
+                                        <div className="absolute top-12 right-0 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                                <h3 className="font-semibold text-sm text-slate-700">Notificaciones</h3>
+                                                {unreadCount > 0 && (
+                                                    <button onClick={markAllRead} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                                                        Marcar todas leídas
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="max-h-[350px] overflow-y-auto">
+                                                {notifications.length === 0 ? (
+                                                    <div className="p-8 text-center">
+                                                        <Bell size={24} className="mx-auto text-slate-300 mb-2"/>
+                                                        <p className="text-sm text-slate-400">No tienes notificaciones nuevas</p>
+                                                    </div>
+                                                ) : (
+                                                    notifications.map(n => (
+                                                        <div 
+                                                            key={n.id} 
+                                                            onClick={() => markAsRead(n.id)}
+                                                            className={`p-3 border-b border-slate-50 cursor-pointer transition-colors group relative ${!n.read ? 'bg-indigo-50/40 hover:bg-indigo-50' : 'hover:bg-slate-50'}`}
+                                                        >
+                                                            <div className="flex justify-between items-start mb-1 pr-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 block"></span>}
+                                                                    <span className={`font-medium text-xs ${!n.read ? 'text-indigo-900' : 'text-slate-700'}`}>{n.title}</span>
+                                                                </div>
+                                                                <span className="text-[10px] text-slate-400 whitespace-nowrap">{n.time}</span>
+                                                            </div>
+                                                            <p className={`text-xs ${!n.read ? 'text-slate-700' : 'text-slate-500'} line-clamp-2`}>{n.text}</p>
+                                                            
+                                                            <button 
+                                                                onClick={(e) => deleteNotification(n.id, e)}
+                                                                className="absolute top-3 right-2 opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition-all"
+                                                            >
+                                                                <Trash2 size={12}/>
+                                                            </button>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {currentUser.role === 'clinic' && !selectedCase && activeTab !== 'new-case' && (
+                                    <button 
+                                        onClick={() => setActiveTab('new-case')}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all"
+                                    >
+                                        <FolderPlus size={16} /> Nuevo Caso
+                                    </button>
+                                )}
                             </div>
                         </header>
-                        <div className="flex-1 overflow-auto p-6">
-                            {selectedCase ? renderCaseDetail() : 
-                             activeTab === 'dashboard' ? renderDashboard() :
-                             activeTab === 'cases' ? renderCasesList() :
-                             activeTab === 'patients' ? renderPatients() :
-                             renderDashboard()}
-                        </div>
+                        <div className="flex-1 overflow-auto p-6">{renderContent()}</div>
                     </main>
                 </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        const root = createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
 </body>
