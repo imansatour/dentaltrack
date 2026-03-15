@@ -20,6 +20,24 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Estilos de Impresión para la Prescripción */
+        @media print {
+            @page { size: A4; margin: 10mm; }
+            body { background: white; margin: 0; padding: 0; }
+            aside, header, .no-print { display: none !important; }
+            main { padding: 0 !important; overflow: visible !important; height: auto !important; width: 100% !important; }
+            .fade-in { animation: none !important; }
+            #printable-prescription { 
+                box-shadow: none !important; 
+                border: none !important; 
+                max-width: 100% !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+            }
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+        }
     </style>
 
     <!-- Import Map -->
@@ -47,9 +65,10 @@
         import { 
             LayoutDashboard, FolderPlus, Search, MessageSquare, Clock, CheckCircle2, 
             FileText, Upload, Users, Bell, ChevronRight, Package, Calendar as CalendarIcon, 
-            AlertCircle, Stethoscope, Microscope, Menu, X, Send, Paperclip, 
+            AlertCircle, Microscope, Menu, X, Send, Paperclip, 
             Image as ImageIcon, MoreVertical, Sparkles, Loader2, ChevronLeft, 
-            ChevronRight as ChevronRightIcon, CreditCard, DollarSign, Download, Trash2, Check 
+            ChevronRight as ChevronRightIcon, CreditCard, DollarSign, Download, Trash2, Check,
+            Clipboard
         } from 'lucide-react';
 
         // --- DATOS INICIALES ---
@@ -79,6 +98,7 @@
                     { sender: "Laboratorio", user: "Téc. Iman Satour", text: "Recibido doctor. Lo tendremos en cuenta en el diseño.", time: "10:15", role: "lab" }
                 ],
                 files: [
+                    { name: "Prescripción.pdf", type: "document", date: "2024-02-01" },
                     { name: "scan_upper_jaw.stl", type: "3d", date: "2024-02-01" },
                     { name: "foto_color.jpg", type: "image", date: "2024-02-01" }
                 ]
@@ -102,7 +122,9 @@
                     { status: "production", date: "2024-02-02 09:00", note: "Fresado de estructura en curso" }
                 ],
                 messages: [],
-                files: []
+                files: [
+                    { name: "Prescripción.pdf", type: "document", date: "2024-01-28" }
+                ]
             },
             {
                 id: "CAS-2024-003",
@@ -124,7 +146,9 @@
                     { status: "sent", date: "2024-01-30", note: "Enviado por mensajería MRW" }
                 ],
                 messages: [],
-                files: []
+                files: [
+                    { name: "Prescripción.pdf", type: "document", date: "2024-01-25" }
+                ]
             }
         ];
 
@@ -158,7 +182,7 @@
 
         // --- GEMINI API HELPER ---
         const callGeminiAPI = async (prompt) => {
-            const apiKey = ""; 
+            const apiKey = ""; // Inserta tu API Key aquí para IA
             if (!apiKey) {
                 console.warn("Falta la API Key de Gemini.");
                 return null;
@@ -217,6 +241,20 @@
                     <h4 className="text-2xl font-bold text-slate-800">{value}</h4>
                 </div>
             </div>
+        );
+
+        // Icono personalizado de Diente con Ortodoncia
+        const ToothBracesIcon = ({ size = 24, className = "" }) => (
+            <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {/* Contorno del diente */}
+                <path d="M10 21.5c-1.5 0-2.5-1-3-2.5l-1.5-4A6.5 6.5 0 0 1 5 11.5v-3a4.5 4.5 0 0 1 4.5-4.5h5A4.5 4.5 0 0 1 19 8.5v3a6.5 6.5 0 0 1-.5 3.5l-1.5 4c-.5 1.5-1.5 2.5-3 2.5a2 2 0 0 1-2-2v-1.5a1 1 0 0 0-2 0v1.5a2 2 0 0 1-2 2z"/>
+                {/* Alambre de los brackets */}
+                <line x1="4" y1="11.5" x2="20" y2="11.5" stroke="currentColor" strokeWidth="1.5" />
+                {/* Brackets */}
+                <rect x="7" y="10.5" width="2" height="2" fill="currentColor" stroke="none" />
+                <rect x="11" y="10.5" width="2" height="2" fill="currentColor" stroke="none" />
+                <rect x="15" y="10.5" width="2" height="2" fill="currentColor" stroke="none" />
+            </svg>
         );
 
         // --- VISTAS COMPLETAS ---
@@ -509,6 +547,312 @@
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Componentes auxiliares para el formulario de prescripción
+        const Cb = ({ children, className = "" }) => (
+            <label className={`flex items-start gap-1 cursor-pointer leading-tight ${className}`}>
+                <input type="checkbox" className="mt-[1px] shrink-0" />
+                <span className="text-[10px] select-none">{children}</span>
+            </label>
+        );
+        const Line = ({ w = "w-16" }) => <input type="text" className={`border-b border-gray-400 outline-none bg-transparent ${w} h-3 text-[10px] px-1 focus:border-indigo-500`} />;
+
+        function PrescriptionView() {
+            return (
+                <div className="space-y-6 fade-in pb-10">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 no-print">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-800">Formulario de Prescripción</h2>
+                                <p className="text-sm text-slate-500">Rellena el formulario digitalmente y guárdalo como PDF o imprímelo directamente.</p>
+                            </div>
+                            <button 
+                                onClick={() => window.print()}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all text-center justify-center w-full sm:w-auto"
+                            >
+                                <Download size={16} />
+                                Imprimir / Guardar PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Contenedor del Formulario (Simula un A4) */}
+                    <div className="flex justify-center overflow-x-auto pb-8">
+                        <div id="printable-prescription" className="bg-white border border-gray-300 shadow-md w-[210mm] min-h-[297mm] p-[10mm] shrink-0 text-black">
+                            
+                            {/* Cabecera */}
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-2/3">
+                                    <h1 className="text-[18px] font-bold mb-2">Formulario Oficial de Prescripción de Prótesis Dentales</h1>
+                                    <table className="border-collapse border border-black w-full text-[10px]">
+                                        <tbody>
+                                            <tr>
+                                                <td className="border border-black px-2 py-1 bg-gray-100 font-semibold w-1/3">Prescripción de:</td>
+                                                <td className="border border-black p-0"><input type="text" className="w-full h-full outline-none px-2" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td className="border border-black px-2 py-1 bg-gray-100 font-semibold">Laboratorio:</td>
+                                                <td className="border border-black p-0"><input type="text" className="w-full h-full outline-none px-2" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td className="border border-black px-2 py-1 bg-gray-100 font-semibold">Paciente/Usuario final (Iniciales):</td>
+                                                <td className="border border-black p-0"><input type="text" className="w-full h-full outline-none px-2" /></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="w-1/3 flex flex-col items-end justify-start">
+                                    <div className="flex flex-col items-center justify-center border border-gray-200 p-2 rounded w-32">
+                                        <ToothBracesIcon size={40} className="text-blue-500 mb-1" />
+                                        <span className="font-bold text-[12px] text-blue-700 tracking-wider">FIMERA</span>
+                                        <span className="text-[7px] text-blue-600 tracking-[0.1em]">ORTHO-CARE</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Encargo General */}
+                            <div className="mb-2">
+                                <h3 className="font-bold text-[11px] mb-1">Encargo General</h3>
+                                <div className="border border-black p-2 flex flex-wrap text-[10px]">
+                                    <div className="w-1/4 space-y-1">
+                                        <Cb>Elaboración de:</Cb>
+                                        <Cb>Reparación de:</Cb>
+                                    </div>
+                                    <div className="w-1/4 space-y-1">
+                                        <Cb>Prótesis completa sup/inf</Cb>
+                                        <Cb>Prótesis parcial removable sup/inf</Cb>
+                                        <Cb>Dispositivo oclusal (placa o férula)</Cb>
+                                    </div>
+                                    <div className="w-1/4 space-y-1">
+                                        <Cb>Espiga(s) colada(s)</Cb>
+                                        <Cb>Carilla(s) / Incrustación(es)</Cb>
+                                        <Cb>Corona(s) Dentosoportada(s)/Implantosoportada(s)</Cb>
+                                    </div>
+                                    <div className="w-1/4 space-y-1">
+                                        <Cb>Puente(s) Dentosoportado(s)/Implantosoportado(s)</Cb>
+                                        <Cb>Prótesis híbrida sup/inf</Cb>
+                                        <div className="flex gap-1 items-center"><Cb>Otros:</Cb><Line w="w-full" /></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Finalidad y Elementos */}
+                            <div className="flex gap-2 mb-2">
+                                <div className="w-1/3">
+                                    <h3 className="font-bold text-[11px] mb-1">Finalidad Prevista</h3>
+                                    <div className="border border-black p-2 grid grid-cols-2 gap-1 h-[68px]">
+                                        <Cb>Diagnóstica</Cb>
+                                        <Cb>Preventiva</Cb>
+                                        <Cb>Restauradora</Cb>
+                                        <Cb>Estética</Cb>
+                                        <Cb className="col-span-2">Rehabilitadora a/funcional</Cb>
+                                    </div>
+                                </div>
+                                <div className="w-2/3">
+                                    <h3 className="font-bold text-[11px] mb-1">Elementos físicos que se adjuntan</h3>
+                                    <div className="border border-black p-2 grid grid-cols-2 gap-1 h-[68px]">
+                                        <Cb>Impresiones/modelos superior/inferior</Cb>
+                                        <Cb>Planchas/rodetes superior/inferior</Cb>
+                                        <div className="flex gap-1 items-center"><Cb>Prueba de:</Cb><Line w="w-24" /></div>
+                                        <Cb>Arco facial/mesa transferencia modelo sup.</Cb>
+                                        <Cb>Registros intermaxilares</Cb>
+                                        <Cb>Patrones/Llaves</Cb>
+                                        <div className="flex gap-1 items-center"><Cb>Articulador:</Cb><Line w="w-24" /></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Etapa Header */}
+                            <div className="flex justify-between items-end border-b-2 border-black pb-1 mb-2 font-bold text-[11px]">
+                                <div>Encargo de la etapa n°: <Line w="w-12"/></div>
+                                <div>Para el día <Line w="w-12"/> de <Line w="w-24"/> de 20<Line w="w-6"/></div>
+                            </div>
+
+                            {/* Main Layout: 2 Columns */}
+                            <div className="flex gap-2">
+                                {/* Left Column */}
+                                <div className="w-1/2 space-y-2 border-r border-black pr-2">
+                                    
+                                    <div className="border border-gray-300 p-1.5">
+                                        <Cb>Vaciar impresiones:</Cb>
+                                        <div className="pl-4 grid grid-cols-2 gap-x-2 gap-y-1 mt-1">
+                                            <div className="flex gap-1 items-center"><Cb>Superior yeso tipo:</Cb><Line w="w-8"/></div>
+                                            <div className="flex gap-1"><Cb>Mod. partido</Cb> <Cb>Con falsa encía</Cb></div>
+                                            <div className="flex gap-1 items-center"><Cb>Inferior yeso tipo:</Cb><Line w="w-8"/></div>
+                                            <div className="flex gap-1"><Cb>Mod. partido</Cb> <Cb>Con falsa encía</Cb></div>
+                                            <div className="col-span-2 flex gap-1 items-center"><Cb>Individualizar muñones de:</Cb><Line w="w-full"/></div>
+                                            <div className="flex gap-2"><Cb>Duplicar modelo:</Cb> <Cb>Superior</Cb> <Cb>Inferior</Cb></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-1.5">
+                                        <Cb>Elaborar:</Cb>
+                                        <div className="pl-4 grid grid-cols-2 gap-x-2 gap-y-1 mt-1">
+                                            <div className="col-span-2">Cubetas individuales:</div>
+                                            <div className="flex gap-2"><Cb>Superior</Cb> <Cb>Con espaciador</Cb></div> <Cb>Abierta</Cb>
+                                            <div className="flex gap-2"><Cb>Inferior</Cb> <Cb>Con espaciador</Cb></div> <Cb>Abierta</Cb>
+                                            <div className="col-span-2 flex gap-2"><Cb>Planchas base con rodete articular de:</Cb> <Cb>godiva roja</Cb> <Cb>cera</Cb></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-1.5">
+                                        <Cb>Montar en articulador:</Cb>
+                                        <div className="pl-4 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                                            <Cb>modelo superior</Cb> <Cb>modo arbitrario</Cb> <Cb>arco/transfer</Cb>
+                                            <Cb>modelo inferior</Cb> <Cb>registro oclusal adjunto</Cb>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-1.5">
+                                        <Cb>Colar/mecanizar en:</Cb> <Line w="w-24"/>
+                                        <div className="pl-4 space-y-1 mt-1">
+                                            <div className="flex gap-2"><Cb>Estructura metálica de PPR</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                            <div className="flex gap-2 pl-4"><Cb>con rodete articular de</Cb> <Cb>godiva roja</Cb> <Cb>cera</Cb></div>
+                                            <div className="flex gap-1 items-center"><Cb>Retenedores de PPR en:</Cb> <Line w="w-16"/> <span className="text-[9px] text-gray-500">(ver int.)</span></div>
+                                            <Cb>Espiga(s)-muñón/cofia directa en el patrón que se adjunta</Cb>
+                                            <div className="flex gap-1 items-center"><Cb>Espiga(s)-muñón/cofia indirecta(s) en dientes:</Cb> <Line w="w-full"/></div>
+                                            <div className="flex gap-1 items-center"><Cb>con barra:</Cb> <Line w="w-full"/></div>
+                                            <div className="flex gap-1 items-center"><Cb>Mesoestructura sobre implante(s) en:</Cb> <Line w="w-full"/></div>
+                                            <div className="flex gap-2 items-center"><Cb>Estructura para sobredentadura:</Cb> <Cb>sup.</Cb> <Cb>inf.</Cb> <span className="text-[9px]">según inst.</span></div>
+                                            <div className="flex gap-1 items-center pt-2"><Cb>Pilar sobre implante(s) en:</Cb> <Line w="w-full"/></div>
+                                            <Cb>Estructura de corona(s)/puente(s)</Cb>
+                                            <div className="pl-4 grid grid-cols-2 gap-1">
+                                                <Cb>dentosoportada</Cb> <Cb>implantosoportada</Cb>
+                                                <Cb>para metal-cerámica</Cb> <Cb>para metal acrílico</Cb>
+                                            </div>
+                                            <div className="flex gap-1 items-center pl-4 pt-1"><Cb>Pilares en:</Cb> <Line w="w-full"/></div>
+                                            <div className="flex gap-1 items-center pl-4"><Cb>Con ataches/barras</Cb> <span className="text-[9px] text-gray-500">(ver int.)</span></div>
+                                            <div className="flex gap-1 items-center"><Cb>Pónticos en:</Cb> <Line w="w-full"/></div>
+                                            <div className="flex gap-2 items-center"><Cb>Estructura prótesis híbridas:</Cb> <Cb>sup.</Cb> <Cb>inf.</Cb> <span className="text-[9px]">según inst.</span></div>
+                                            <div className="flex gap-1 items-center pt-2"><Cb>Otros:</Cb> <Line w="w-full"/></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-1.5 space-y-1">
+                                        <div className="flex gap-2"><Cb>Elaborar prótesis inmediata(s)</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                        <div className="flex gap-1 items-center"><Cb>Dientes que se reponen:</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>Retenedores en:</Cb> <Line w="w-24"/> <span className="text-[9px] text-gray-500">(ver int.)</span></div>
+                                        <div className="flex gap-1 items-center"><Cb>Elaborar provisionales de acrílico, color:</Cb> <Line w="w-8"/> <Cb>guía:</Cb> <Line w="w-16"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>en dientes:</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-2"><Cb>Elaborar cubeta(s) de blanq./fluoriz</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                        <Cb>Elaborar protector deportivo</Cb>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-1.5 space-y-1">
+                                        <Cb>Encerar y montar prueba de dientes (ver int.)</Cb>
+                                        <div className="flex gap-2"><Cb>Encerar desprogramación/férula oclusal</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                        <div className="flex gap-2"><Cb>Terminar prótesis completa</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                        <div className="flex gap-2"><Cb>Terminar prótesis parcial removible</Cb> <Cb>superior</Cb> <Cb>inferior</Cb></div>
+                                        <div className="flex gap-2"><Cb>Terminar dispositivo de desprogramación/protección oclusal</Cb></div>
+                                        <div className="flex gap-2"><Cb>Colocar recubrimiento estético</Cb> <Cb>cerámica</Cb> <Cb>acrílico</Cb></div>
+                                        <div className="flex gap-2 pl-4"><Cb>Para prueba</Cb> <div className="flex gap-1 items-center"><Cb>Terminar en color:</Cb> <Line w="w-8"/> <Cb>guía:</Cb> <Line w="w-16"/></div></div>
+                                        <div className="flex gap-1 items-center"><Cb>Elaborar carillas/incrustaciones estéticas de:</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>en:</Cb> <Line w="w-full"/></div>
+                                    </div>
+                                    
+                                    <div className="border border-gray-300 p-1.5 space-y-1">
+                                        <span className="font-semibold text-[10px]">Composturas y reparaciones de prótesis removibles:</span>
+                                        <div className="flex gap-1 items-center"><Cb>Añadir dientes</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>Añadir retenedores</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>Rebase(s)</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><Cb>Reparar</Cb> <Line w="w-full"/></div>
+                                        <Line w="w-full"/>
+                                    </div>
+
+                                </div>
+
+                                {/* Right Column */}
+                                <div className="w-1/2 space-y-2 pl-2">
+                                    <div className="mb-2">
+                                        <span className="font-semibold text-[10px]">Caracterizaciones:</span>
+                                        <div className="border border-gray-300 h-24 mt-1 flex items-center justify-center text-gray-400 bg-gray-50 text-[10px]">
+                                            <span className="italic px-4 text-center">Espacio reservado para esquema y notas de caracterización dental</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-gray-300 pt-2 space-y-1">
+                                        <div className="text-center font-bold text-[11px] mb-2">Indicaciones e Instrucciones:</div>
+                                        
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <div className="w-1/2 space-y-1">
+                                                <span className="font-semibold text-[10px]">Ajuste del articulador:</span>
+                                                <div className="flex gap-1 items-center"><span className="text-[10px] w-28">Inclinación condílea sagital</span> <Line w="w-8"/></div>
+                                                <div className="flex gap-1 items-center"><span className="text-[10px] w-28">Ángulo de Bennet</span> <Line w="w-8"/></div>
+                                                <div className="flex gap-1 items-center"><span className="text-[10px] w-28">Inclinación de platina incisal</span> <Line w="w-8"/></div>
+                                            </div>
+                                            <div className="w-1/2 flex flex-col items-center">
+                                                <div className="flex w-full text-center text-[9px]"><div className="w-1/2">Lado derecho</div><div className="w-1/2">Lado izquierdo</div></div>
+                                                <div className="border border-black w-full h-12 relative mt-1">
+                                                    <div className="absolute top-0 bottom-0 left-1/2 border-l border-black"></div>
+                                                    <div className="absolute top-1/2 left-0 right-0 border-t border-black"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-1 mb-2">
+                                            <div className="flex gap-1 items-center"><span className="text-[10px]">Montado en</span></div>
+                                            <div className="flex gap-2"><Cb>Relación céntrica</Cb> <Cb>Máxima intercuspidación</Cb></div>
+                                            <div className="flex gap-1 items-center"><span className="text-[10px]">Trabajar en</span></div>
+                                            <div className="flex gap-2"><Cb>Relación céntrica</Cb> <Cb>Máxima intercuspidación</Cb></div>
+                                            <div className="col-span-2 flex gap-1 justify-end"><Cb>Con el puntero incisal en</Cb><Line w="w-8"/><span className="text-[10px]">mm.</span></div>
+                                        </div>
+
+                                        <div className="space-y-1 mb-2">
+                                            <span className="font-semibold text-[10px]">Oclusión:</span>
+                                            <div className="flex gap-2"><span className="text-[10px] w-28">Máxima intercuspidación</span> <Cb>Cúspide/fosa</Cb> <Cb>Cúspide-plano/cresta</Cb></div>
+                                            <div className="flex gap-2 pl-28"><Cb>Diente a diente</Cb> <Cb>Diente a dos dientes</Cb></div>
+                                            <div className="flex gap-2"><span className="text-[10px] w-28">Función oclusal derecha</span> <Cb>Canina</Cb> <Cb>De grupo</Cb> <Cb>Balanceada</Cb></div>
+                                            <div className="flex gap-2"><span className="text-[10px] w-28">Función oclusal izquierda</span> <Cb>Canina</Cb> <Cb>De grupo</Cb> <Cb>Balanceada</Cb></div>
+                                        </div>
+
+                                        <div className="space-y-1 mb-4">
+                                            <div className="flex gap-2"><span className="font-semibold text-[10px] w-28">Dientes artificiales:</span> <Cb>Cerámica</Cb> <Cb>Isosite</Cb> <Cb>Acrílico</Cb></div>
+                                            <div className="flex gap-2"><span className="text-[10px] w-28">Forma</span> <Cb>Cuadrada</Cb> <Cb>Triangular</Cb> <Cb>Ovoidea</Cb></div>
+                                            <div className="flex gap-2 pl-28"><Cb>Especiales para mordida cruzada</Cb></div>
+                                            <div className="flex gap-2 items-center mt-2"><span className="text-[10px]">Color:</span><Line w="w-16"/> <span className="text-[10px]">De la guía:</span><Line w="w-24"/></div>
+                                            <div className="flex gap-1 items-center"><span className="text-[10px]">Otros:</span> <Line w="w-full"/></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-gray-300 p-2 space-y-1">
+                                        <div className="text-center font-bold text-[11px] mb-2 border-b border-gray-200 pb-1">Instrucciones para el diseño:</div>
+                                        <Cb>Características estándar</Cb>
+                                        <Cb>Características específicas (ver dibujo de elementos protésicos en el modelo)</Cb>
+                                        
+                                        <div className="mt-2 space-y-1">
+                                            <span className="text-[10px]">Retenedores en:</span>
+                                            <div className="flex justify-between items-center px-4"><span className="text-[9px]">Tipo retenedor:</span> <Line w="w-12"/> <Line w="w-12"/> <Line w="w-12"/> <Line w="w-12"/></div>
+                                            <div className="flex justify-between items-center px-4"><span className="text-[9px]">Cant. retención:</span> <Line w="w-12"/> <Line w="w-12"/> <Line w="w-12"/> <Line w="w-12"/></div>
+                                        </div>
+                                        
+                                        <div className="flex gap-1 mt-2"><Cb>Barra cingular:</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1"><Cb>Barras coronarias:</Cb> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><span className="text-[10px]">Tipo de placa palatina:</span> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><span className="text-[10px]">Tipo de barra:</span> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center"><span className="text-[10px]">Tipo de sillas:</span> <Line w="w-full"/></div>
+                                        <div className="flex gap-1 items-center pt-2"><span className="text-[10px]">Otros:</span> <Line w="w-full"/></div>
+                                        <Line w="w-full"/>
+                                        <Line w="w-full"/>
+                                        <Line w="w-full"/>
+                                    </div>
+
+                                    {/* Footer Signatures */}
+                                    <div className="mt-6 flex flex-col gap-4">
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-[10px]">Fecha:</span> <Line w="w-12"/> <span className="text-[10px]">de</span> <Line w="w-24"/> <span className="text-[10px]">de 20</span> <Line w="w-8"/>
+                                            <span className="text-[10px] ml-auto mr-8 font-bold">Firma y Sello,</span>
+                                        </div>
+                                        <div className="flex items-end gap-2 mt-8">
+                                            <span className="text-[10px] font-bold">Firmado,</span> <Line w="w-full"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -868,8 +1212,8 @@
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {caseData.files.map((file, idx) => (
                                             <div key={idx} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
-                                                <div className="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                                    {file.type === '3d' ? <Package size={20}/> : <ImageIcon size={20}/>}
+                                                <div className="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                                                    {file.type === '3d' ? <Package size={20}/> : file.type === 'document' ? <FileText size={20}/> : <ImageIcon size={20}/>}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium text-slate-800 truncate">{file.name}</p>
@@ -877,7 +1221,7 @@
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer text-slate-500 hover:text-indigo-600 transition-colors">
+                                        <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer text-slate-500 hover:text-indigo-600 transition-colors min-h-[66px]">
                                             <Upload size={18} />
                                             <span className="text-sm font-medium">Subir archivo</span>
                                         </div>
@@ -1105,6 +1449,7 @@
                     case 'calendar': return <CalendarView cases={cases} onSelectCase={setSelectedCase} />;
                     case 'patients': return <PatientsView patients={patients} />;
                     case 'billing': return <BillingView invoices={invoices} />;
+                    case 'prescription': return currentUser.role === 'clinic' ? <PrescriptionView /> : <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
                     case 'new-case': return <NewCaseForm onSave={handleCreateCase} onCancel={() => setActiveTab('dashboard')} user={currentUser} />;
                     default: return <DashboardView cases={cases} stats={stats} onSelectCase={setSelectedCase} user={currentUser} />;
                 }
@@ -1115,7 +1460,8 @@
                     <aside className={`${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 w-64 md:w-20'} fixed md:relative z-40 h-full bg-white border-r border-slate-200 transition-all duration-300 flex flex-col`}>
                         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 shrink-0">
                             {(sidebarOpen || window.innerWidth >= 768) && <div className="font-bold text-xl text-indigo-600 flex items-center gap-2 overflow-hidden whitespace-nowrap">
-                                <Stethoscope size={18} className="shrink-0" /> {sidebarOpen ? 'Dental Track' : ''}
+                                <ToothBracesIcon size={28} className="shrink-0" />
+                                {sidebarOpen ? 'Dental Track' : ''}
                             </div>}
                             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500 hidden md:block">
                                 {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
@@ -1128,6 +1474,9 @@
                         <nav className="flex-1 py-6 px-2 space-y-1 overflow-y-auto">
                             <NavItem icon={LayoutDashboard} label="Panel de Control" active={activeTab === 'dashboard'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('dashboard'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
                             <NavItem icon={FolderPlus} label="Gestión de Casos" active={activeTab === 'cases'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('cases'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            {currentUser.role === 'clinic' && (
+                                <NavItem icon={Clipboard} label="Prescripción" active={activeTab === 'prescription'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('prescription'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
+                            )}
                             <NavItem icon={CalendarIcon} label="Calendario" active={activeTab === 'calendar'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('calendar'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
                             <NavItem icon={Users} label="Pacientes" active={activeTab === 'patients'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('patients'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
                             <NavItem icon={CreditCard} label="Facturación" active={activeTab === 'billing'} collapsed={!sidebarOpen} onClick={() => {setActiveTab('billing'); setSelectedCase(null); if(window.innerWidth < 768) setSidebarOpen(false);}} />
@@ -1170,7 +1519,8 @@
                                     {activeTab === 'calendar' && 'Calendario de Entregas'}
                                     {activeTab === 'patients' && 'Directorio de Pacientes'}
                                     {activeTab === 'billing' && 'Facturación y Pagos'}
-                                    {selectedCase && `Detalle: ${selectedCase.id}`}
+                                    {activeTab === 'prescription' && 'Formulario de Prescripción'}
+                                    {selectedCase && `Detalle del Caso: ${selectedCase.id}`}
                                 </h2>
                             </div>
 
